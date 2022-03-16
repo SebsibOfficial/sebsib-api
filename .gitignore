@@ -1,1 +1,5 @@
 node_modules
+# Exclude the .env file
+.env
+# Exclude the /log file
+logs
