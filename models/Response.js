@@ -1,5 +1,25 @@
 const mongoose = require('mongoose');
 
+
+const answerScheme = new mongoose.Schema({
+  _id: {
+    type: mongoose.Types.ObjectId,
+    required: true,
+  },
+  inputType: {
+    type: mongoose.Types.ObjectId,
+    required: true,
+  },
+  questionId: {
+    type: mongoose.Types.ObjectId,
+    required: true,
+  },
+  answer: {
+    type: String,
+    required: true,
+  }
+})
+
 const responseSchema = new mongoose.Schema({
   _id: {
     type: mongoose.Types.ObjectId,
@@ -22,24 +42,4 @@ const responseSchema = new mongoose.Schema({
     required: true
   }
 })
-
-const answerScheme = new mongoose.Schema({
-  _id: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-  },
-  inputType: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-  },
-  questionId: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-  },
-  answer: {
-    type: mongoose.Types.ObjectId | String | Number,
-    required: true,
-  }
-})
-
 module.exports = mongoose.model('response', responseSchema)

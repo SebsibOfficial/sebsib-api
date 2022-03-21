@@ -1,26 +1,5 @@
 const mongoose = require('mongoose');
 
-const questionSchema = new mongoose.Schema({
-  _id: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-  },
-  hasShowPattern: {
-    type: Boolean,
-    required: true
-  },
-  showIf: showSchema,
-  options: choiceSchema,
-  questionText: {
-    type: String,
-    required: true
-  },
-  inputType: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-  }
-})
-
 const showSchema = new mongoose.Schema({
   questionId: {
     type: mongoose.Types.ObjectId,
@@ -45,6 +24,27 @@ const choiceSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+})
+
+const questionSchema = new mongoose.Schema({
+  _id: {
+    type: mongoose.Types.ObjectId,
+    required: true,
+  },
+  hasShowPattern: {
+    type: Boolean,
+    required: true
+  },
+  showIf: showSchema,
+  options: choiceSchema,
+  questionText: {
+    type: String,
+    required: true
+  },
+  inputType: {
+    type: mongoose.Types.ObjectId,
+    required: true,
+  }
 })
 
 module.exports = mongoose.model('question', questionSchema)
