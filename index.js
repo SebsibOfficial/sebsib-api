@@ -3,8 +3,6 @@ const dotenv = require('dotenv');
 const {postRoutes, getRoutes, patchRoutes, authRoutes} = require('./routes');
 const bodyParser = require('body-parser');
 const authorizeKey = require('./utils/authorizeKey');
-const morganBody = require('morgan-body');
-const logger = require('./utils/logger');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
@@ -14,7 +12,6 @@ mongoose.connect(process.env.DB_URL).catch(error => console.error(error)) // Con
 app.use(cors()); // Enable CORS
 app.use(authorizeKey); // Verify API Key in header
 app.use(bodyParser.json()); // Parsing JSON body
-morganBody(app, {noColors: true, stream: logger}); // Initialize logging each api request/response
 
 // Main routes
 app.use('/get', getRoutes);
