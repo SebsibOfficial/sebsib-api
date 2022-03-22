@@ -1,8 +1,9 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const {postRoutes, getRoutes, patchRoutes, authRoutes} = require('./routes');
+const {postRoutes, getRoutes, patchRoutes, authRoutes, adminRoutes, deleteRoutes} = require('./routes');
 const bodyParser = require('body-parser');
 const authorizeKey = require('./utils/authorizeKey');
+const authorizeToken = require('./utils/authorizeToken');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
@@ -16,7 +17,9 @@ app.use(authorizeKey); // Verify API Key in header
 app.use(bodyParser.json()); // Parsing JSON body
 
 // Main routes
-app.use('/get', getRoutes);
-app.use('/post', postRoutes);
-app.use('/patch', patchRoutes);
+app.use('/get', authorizeToken, getRoutes);
+app.use('/post', authorizeToken, postRoutes);
+app.use('/delete', authorizeToken, deleteRoutes);
+app.use('/patch', authorizeToken, patchRoutes);
 app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
