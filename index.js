@@ -8,7 +8,9 @@ const cors = require('cors');
 
 const app = express(); // Start the Server
 dotenv.config(); // Configure to access .env files
-mongoose.connect(process.env.DB_URL).catch(error => console.error(error)) // Connect to the Database
+mongoose.connect(process.env.NODE_ENV == 'dev' ? process.env.TEST_DB_URL : process.env.PROD_DB_URL)
+.catch(error => console.error(error))
+.then(() => app.listen(process.env.PORT, () => console.log("Server Running at "+process.env.PORT+"..."))) // Connect to the Database
 app.use(cors()); // Enable CORS
 app.use(authorizeKey); // Verify API Key in header
 app.use(bodyParser.json()); // Parsing JSON body
@@ -18,5 +20,3 @@ app.use('/get', getRoutes);
 app.use('/post', postRoutes);
 app.use('/patch', patchRoutes);
 app.use('/auth', authRoutes);
-
-app.listen(process.env.PORT, () => console.log("Server Running at "+process.env.PORT+"..."))

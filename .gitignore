@@ -1,3 +1,5 @@
 node_modules
 # Exclude the .env file
 .env
+
+sebsib_play.mongodb
