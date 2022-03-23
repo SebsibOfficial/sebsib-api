@@ -17,7 +17,7 @@ router.post('/login', async (req, res) => {
           } else res.status(401).json({message: "Wrong credentials"})
         });
       } else res.status(401).json({message: "Wrong credentials"})
-    } catch (error) { res.status(500).send(error) }
+    } catch (error) { console.log(error); res.status(500).send("Server Error") }
   } else {
     res.status(400).json({message: "Bad Input"})
   }
@@ -43,7 +43,7 @@ router.post('/fillsettings', async (req, res) => {
           } else res.status(401).json({message: "Wrong credentials"})
         });
       } else res.status(401).json({message: "Wrong credentials"})
-    } catch (error) { res.status(500).send(error) }
+    } catch (error) { console.log(error); res.status(500).send("Server Error") }
   } else {
     res.status(400).json({message: "Bad Input"})
   }
