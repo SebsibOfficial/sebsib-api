@@ -10,10 +10,14 @@ router.post('/login', async (req, res) => {
     try {
       const user = await User.findOne({email: email});
       if (user != null) {
-        bcrypt.compare(password, user.password, function(err, result) {
+        bcrypt.compare(password, user.password, async function(err, result) {
           if (result) {
-            const token = jwt.sign({_id: user._id, role: user.roleId}, process.env.TOKEN_SECRET);
-            res.status(200).json({token: token});
+            var orgId = await Organization.exists({owner: user._id});
+            if (orgId != null) {
+              const token = jwt.sign({_id: user._id, role: user.roleId}, process.env.TOKEN_SECRET);
+              delete user.password;
+              res.status(200).json({token: token, user: user, orgId: orgId});
+            } else res.status(401).json({message: "Wrong credentials"})
           } else res.status(401).json({message: "Wrong credentials"})
         });
       } else res.status(401).json({message: "Wrong credentials"})
