@@ -12,7 +12,7 @@ router.post('/login', async (req, res) => {
       if (user != null) {
         bcrypt.compare(password, user.password, function(err, result) {
           if (result) {
-            const token = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET);
+            const token = jwt.sign({_id: user._id, role: user.roleId}, process.env.TOKEN_SECRET);
             res.status(200).json({token: token});
           } else res.status(401).json({message: "Wrong credentials"})
         });
@@ -38,7 +38,7 @@ router.post('/fillsettings', async (req, res) => {
       if (user != null) {
         bcrypt.compare(password, user.password, function(err, result) {
           if (result) {
-            const token = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET);
+            const token = jwt.sign({_id: user._id, role: user.roleId}, process.env.TOKEN_SECRET);
             res.status(200).json({token: token});
           } else res.status(401).json({message: "Wrong credentials"})
         });
