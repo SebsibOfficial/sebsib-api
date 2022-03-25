@@ -2,6 +2,9 @@ const authorizeRoleFor = require('./authorizeRoleFor');
 const enums = require('./enums');
 
 /* 
+
+Middleware to check the access of the users in the system
+
 TLDR;
 accessControl(1) -> only SUPER_ADMIN
 accessControl(2) -> only SUPER_ADMIN and ADMIN
