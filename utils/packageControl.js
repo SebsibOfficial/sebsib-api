@@ -6,8 +6,8 @@ const verifyPackage = require('./verifyPackage')
 module.exports = packageControl = (check) => {
   return packageControl[check] || (packageControl[check] = async function(req, res, next) {
     var hasEnough = await verifyPackage(req.header('auth-token'), check);
-    if (hasEnough) {
+    if (hasEnough === true) {
       next();
     }
-    else return res.status(401).json({message: "Package not enough"});
+    else return res.status(401).json({message: "Package not enough "+hasEnough});
   })}

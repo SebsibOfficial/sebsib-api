@@ -29,16 +29,16 @@ module.exports = async (token, forParam) => {
   
   // Check if it exceeds package limit
   if (package.name == enums.PACKAGES.UNLIMITED) {
-    return package.name;
+    return true;
   }
 
   switch (forParam) {
     case 'MEMBER':
-      return memberCount > package.members ? false : true
+      return memberCount > package.members ? 'curr_member='+memberCount : true
     case 'PROJECT':
-      return projectCount > package.projects ? false : true
+      return projectCount > package.projects ? 'curr_project='+projectCount : true
     case 'SURVEY':
-      return surveyCount > package.surveys ? false : true
+      return surveyCount > package.surveys ? 'curr_survey='+surveyCount : true
     default:
       break;
   }
