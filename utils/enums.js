@@ -8,5 +8,10 @@ module.exports = {
   PACKAGES:{
     FREE_TRAIL: "FREE TRAIL",
     UNLIMITED: "UNLIMITED"
+  },
+  CHECK:{
+    MEMBER: "MEMBER",
+    SURVEY: "SURVEY",
+    PROJECT: "PROJECT"
   }
 }

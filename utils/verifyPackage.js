@@ -33,11 +33,11 @@ module.exports = async (token, forParam) => {
   }
 
   switch (forParam) {
-    case 'member':
+    case 'MEMBER':
       return memberCount > package.members ? false : true
-    case 'project':
+    case 'PROJECT':
       return projectCount > package.projects ? false : true
-    case 'survey':
+    case 'SURVEY':
       return surveyCount > package.surveys ? false : true
     default:
       break;
