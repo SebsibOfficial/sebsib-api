@@ -1,8 +1,12 @@
-const { User } = require("../models");
+const { User, Project } = require("../models");
+const validator = require("validator");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 const getMemberListController = async (req, res, next) => {
   var orgId = req.params.orgId;
-  if (orgId == null) return res.status(403).json({message: 'Bad Input'})
+  if (orgId == null) return res.status(400).json({message: 'Bad Input'})
   try {
     const memberlist = await User.find({organizationId: orgId})
     res.status(200).send(memberlist)
@@ -12,8 +16,40 @@ const getMemberListController = async (req, res, next) => {
   }
 }
 
-const createMemberController = (req, res, next) => {
-  res.json({message: "Hey from createMemberController"})
+const createMemberController = async (req, res, next) => {
+  var {email, password, username, projectsId} = req.body;
+  var orgId = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET).org;
+  
+  // Check if string is an email
+  if (!validator.isEmail(email)) {
+    return res.status(400).json({message: 'Invalid Email'});
+  }
+  // Check if username exists
+  if (await User.exists({username: username}) || await User.exists({email: email})) {
+    return res.status(400).json({message: 'Username or Email Exists'});
+  }
+  // Encrypt password
+  bcrypt.hash(password, 10, function(err, hash) {
+    var hashedPassword = hash;
+  });
+  // Check if projectId exist
+  for (var i = 0; i < projectsId.length; i++) {
+    if(await Project.exists({_id: projectsId[i]}) == null){
+      return res.status(400).json({message: 'Project doesn\'t Exist'});
+    }
+  }
+  // Create Member
+  var result = await User.insertMany([{
+    _id: new ObjectId(),
+    organizationId: orgId,
+    projectsId: projectsId,
+    roleId: new ObjectId('623cc24a8b7ab06011bd1e5f'),
+    email: email,
+    username: username,
+    password: hashedPassword,
+  }]);
+
+  res.status(200).send(result);
 }
 
 const getMemberController = async (req, res, next) => {
