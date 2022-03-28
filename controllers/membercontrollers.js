@@ -19,7 +19,7 @@ const getMemberListController = async (req, res, next) => {
 const createMemberController = async (req, res, next) => {
   var {email, password, username, projectsId} = req.body;
   var orgId = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET).org;
-  
+  var hashedPassword = 'a';
   // Check if string is an email
   if (!validator.isEmail(email)) {
     return res.status(400).json({message: 'Invalid Email'});
@@ -29,9 +29,8 @@ const createMemberController = async (req, res, next) => {
     return res.status(400).json({message: 'Username or Email Exists'});
   }
   // Encrypt password
-  bcrypt.hash(password, 10, function(err, hash) {
-    var hashedPassword = hash;
-  });
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
   // Check if projectId exist
   for (var i = 0; i < projectsId.length; i++) {
     if(await Project.exists({_id: projectsId[i]}) == null){
@@ -48,7 +47,7 @@ const createMemberController = async (req, res, next) => {
     username: username,
     password: hashedPassword,
   }]);
-
+  delete result[0].password;
   res.status(200).send(result);
 }
 
