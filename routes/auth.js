@@ -12,11 +12,11 @@ router.post('/login', async (req, res) => {
       if (user != null) {
         bcrypt.compare(password, user.password, async function(err, result) {
           if (result) {
-            var orgId = await Organization.exists({owner: user._id});
-            if (orgId != null) {
-              const token = jwt.sign({_id: user._id, role: user.roleId, org: orgId._id}, process.env.TOKEN_SECRET);
+            var org = await Organization.findOne({ownerId: user._id});
+            if (org != null) {
+              const token = jwt.sign({_id: user._id, role: user.roleId, org: org._id}, process.env.TOKEN_SECRET);
               user.password = "*";
-              res.status(200).json({token: token, user: user, orgId: orgId});
+              res.status(200).json({token: token, user: user, orgId: org});
             } else res.status(401).json({message: "Wrong credentials"})
           } else res.status(401).json({message: "Wrong credentials"})
         });
