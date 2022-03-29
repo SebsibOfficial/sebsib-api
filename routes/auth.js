@@ -15,7 +15,7 @@ router.post('/login', async (req, res) => {
             var orgId = await Organization.exists({owner: user._id});
             if (orgId != null) {
               const token = jwt.sign({_id: user._id, role: user.roleId, org: orgId._id}, process.env.TOKEN_SECRET);
-              delete user.password;
+              user.password = "*";
               res.status(200).json({token: token, user: user, orgId: orgId});
             } else res.status(401).json({message: "Wrong credentials"})
           } else res.status(401).json({message: "Wrong credentials"})

@@ -19,7 +19,7 @@ const getMemberListController = async (req, res, next) => {
 const createMemberController = async (req, res, next) => {
   var {email, password, username, projectsId} = req.body;
   var orgId = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET).org;
-  var hashedPassword = 'a';
+  
   // Check if string is an email
   if (!validator.isEmail(email)) {
     return res.status(400).json({message: 'Invalid Email'});
@@ -45,7 +45,7 @@ const createMemberController = async (req, res, next) => {
     roleId: new ObjectId('623cc24a8b7ab06011bd1e5f'),
     email: email,
     username: username,
-    password: hashedPassword,
+    password: hash,
   }]);
   delete result[0].password;
   res.status(200).send(result);
