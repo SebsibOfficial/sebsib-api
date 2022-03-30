@@ -52,7 +52,12 @@ const getProjectListController = async (req, res) => {
   }
 }
 
+const deleteProjectController = (req, res, next) => {
+  res.json({message: "Hey from deleteProjectController"})
+}
+
 module.exports = {
   createProjectController,
-  getProjectListController
+  getProjectListController,
+  deleteProjectController
 }

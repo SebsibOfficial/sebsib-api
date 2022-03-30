@@ -65,9 +65,15 @@ const getMemberController = async (req, res, next) => {
 const editMemberController = (req, res, next) => {
   res.json({message: "Hey from editMemberController"})
 }
+
+const deleteMemberController = (req, res, next) => {
+  res.json({message: "Hey from deleteMemberController"})
+}
+
 module.exports = {
   createMemberController,
   getMemberListController,
   getMemberController,
-  editMemberController
+  editMemberController,
+  deleteMemberController
 }

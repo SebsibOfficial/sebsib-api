@@ -29,10 +29,16 @@ const getRecentSurveyController = (req, res, next) => {
 const sendResponseController = (req, res) => {
   res.json({message: "Hey from sendResponseController"})
 }
+
+const deleteSurveyController = (req, res, next) => {
+  res.json({message: "Hey from deleteSurveyController"})
+}
+
 module.exports = {
   createSurveyController,
   getSurveyListController,
   getRecentSurveyController,
   getSurveyController,
-  sendResponseController
+  sendResponseController,
+  deleteSurveyController
 }

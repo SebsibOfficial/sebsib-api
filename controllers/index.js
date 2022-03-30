@@ -1,6 +1,6 @@
-const { getMemberListController, createMemberController, getMemberController, editMemberController } = require('../controllers/membercontrollers');
-const { getSurveyListController, createSurveyController, getRecentSurveyController, getSurveyController, sendResponseController } = require('../controllers/surveycontrollers');
-const { getProjectListController, createProjectController } = require('../controllers/projectcontrollers');
+const { getMemberListController, createMemberController, getMemberController, editMemberController, deleteMemberController } = require('../controllers/membercontrollers');
+const { getSurveyListController, createSurveyController, getRecentSurveyController, getSurveyController, sendResponseController, deleteSurveyController } = require('../controllers/surveycontrollers');
+const { getProjectListController, createProjectController, deleteProjectController } = require('../controllers/projectcontrollers');
 const { editSettingsController } = require('../controllers/settingcontrollers');
 
 module.exports = {
@@ -16,5 +16,8 @@ module.exports = {
   getSurveyController,
   createProjectController, 
   sendResponseController,
-  editMemberController
+  editMemberController,
+  deleteMemberController,
+  deleteProjectController,
+  deleteSurveyController
 }
