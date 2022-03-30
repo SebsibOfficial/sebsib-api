@@ -13,7 +13,7 @@ router.post('/login', async (req, res) => {
         bcrypt.compare(password, user.password, async function(err, result) {
           if (result) {
             var org = await Organization.findOne({ownerId: user._id});
-            if (org != null) {
+            if (org != null && user.roleId == '623cc24a8b7ab06011bd1e60') {
               const token = jwt.sign({_id: user._id, role: user.roleId, org: org._id}, process.env.TOKEN_SECRET);
               user.password = "*";
               res.status(200).json({token: token, user: user, orgId: org});
