@@ -1,4 +1,4 @@
-const { Project } = require("../models");
+const { Project, Response, Question, Survey } = require("../models");
 
 const createSurveyController = (req, res) => {
   res.json({message: "Hey from createSurveyController"})
@@ -29,10 +29,31 @@ const getRecentSurveyController = (req, res, next) => {
 const sendResponseController = (req, res) => {
   res.json({message: "Hey from sendResponseController"})
 }
+// *** NEEDS TO BE TESTED HARD ****
+const deleteSurveyController = async (req, res, next) => {
+  const Projectid = req.params.pid;
+  const SurveyId = req.params.sid;
+  // Check if SurveyId is in Project
+  var project = await Project.findById(Projectid);
+  if (!project.surveysId.includes(SurveyId)) return res.status(403).json({message: "Survey not found"});
+  var survey = await Survey.findById(SurveyId);
+  var resIds = survey.responses; var quesIds = survey.questions;
+  // Delete Responses
+  var dr = await Response.deleteMany({_id: {$in: resIds}});
+  // Delete Questions
+  var dq = await Question.deleteMany({_id: {$in: quesIds}});
+  // Remove from surveysId list
+  var dfp = await Project.updateOne({_id: Projectid}, {$pull: {surveysId: survey._id}})
+  // Remove from survey collection
+  var ds = await Survey.findOneAndDelete({_id: SurveyId});
+  return res.status(200).json(ds);
+}
+
 module.exports = {
   createSurveyController,
   getSurveyListController,
   getRecentSurveyController,
   getSurveyController,
-  sendResponseController
+  sendResponseController,
+  deleteSurveyController
 }

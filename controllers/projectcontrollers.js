@@ -1,4 +1,4 @@
-const { Organization, Project, User } = require("../models");
+const { Organization, Project, User, Survey, Response, Question } = require("../models");
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
 
@@ -51,8 +51,51 @@ const getProjectListController = async (req, res) => {
     res.status(500).json({message: 'Server Error'});
   }
 }
+ // ***MORE TESTING IS NEED ON THIS CONTROLLER***
+const deleteProjectController = async (req, res, next) => {
+  const projectId = req.params.id;
+  var orgId = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET).org;
+  var surveyIDs = [], respIDs = [], questionIDs = [];
+  try {
+    // Get survey IDs
+    var r = await Project.findById(projectId);
+    surveyIDs = r.surveysId;
+    // Get survey answers & question Ids
+    for (let index = 0; index < surveyIDs.length; index++) {
+      var r = await Survey.findById(surveyIDs[index]);
+      r.responses.forEach(resp => {
+        respIDs.push(resp);
+      });
+      r.questions.forEach(ques => {
+        questionIDs.push(ques);
+      });
+    }
+    // Get the User that have this project
+    var orgUsers = await User.find({organizationId: orgId});
+    // Delete Responses
+    var dr = await Response.deleteMany({_id: {$in: respIDs}});
+    // Delete Questions
+    var dq = await Question.deleteMany({_id: {$in: questionIDs}});
+    // Delete Surveys
+    var ds = await Survey.deleteMany({_id: {$in: surveyIDs}})
+    // Delete from Org project list
+    var dfo = await Organization.updateOne({_id: orgId}, {$pull: {projectsId: projectId}})
+    // Delete from User project list
+    for (let index = 0; index < orgUsers.length; index++) {
+      var dfu = await User.updateOne({_id: orgUsers[index]._id}, {$pull: {projectsId: projectId}})
+    }
+    // Delete from Projects
+    var dp = await Project.findByIdAndDelete(projectId);
+
+    res.status(200).json({projectId, surveyIDs, respIDs, questionIDs});
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message: "Server Error"});
+  }
+}
 
 module.exports = {
   createProjectController,
-  getProjectListController
+  getProjectListController,
+  deleteProjectController
 }

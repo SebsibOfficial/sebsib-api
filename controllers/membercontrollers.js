@@ -65,9 +65,23 @@ const getMemberController = async (req, res, next) => {
 const editMemberController = (req, res, next) => {
   res.json({message: "Hey from editMemberController"})
 }
+
+const deleteMemberController = async (req, res, next) => {
+  const id = req.params.id;
+  const user = await User.findOne({_id: id});
+  // Check if the user to-be deleted exists 
+  if (user == null) return res.status(404).json({message: 'User doesn\'t exist'});
+  // Check if to-be deleted user is a member
+  if (user.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
+  // Remove from User collection
+  const result = await User.findOneAndDelete({_id: id});
+  res.status(200).json(result);
+}
+
 module.exports = {
   createMemberController,
   getMemberListController,
   getMemberController,
-  editMemberController
+  editMemberController,
+  deleteMemberController
 }
