@@ -1,7 +1,10 @@
+const jwt = require('jsonwebtoken');
 const { Project, Response, Question, Survey } = require("../models");
 
 const createSurveyController = (req, res) => {
-  res.json({message: "Hey from createSurveyController"})
+  var orgId = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET).org;
+  var {surveyName, questions} = req.body;
+  
 }
 
 const getSurveyListController = async (req, res) => {
