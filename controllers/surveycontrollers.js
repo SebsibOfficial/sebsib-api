@@ -1,10 +1,33 @@
+const req = require('express/lib/request');
 const jwt = require('jsonwebtoken');
 const { Project, Response, Question, Survey } = require("../models");
+const ObjectId = require('mongoose').Types.ObjectId;
 
-const createSurveyController = (req, res) => {
+const createSurveyController = async (req, res) => {
   var orgId = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET).org;
+  var projectId = req.params.projectId;
   var {surveyName, questions} = req.body;
-  
+  console.log(surveyName, questions);
+  try {
+    // Create the survey
+      // Check if there are similarly named surveys
+      var result = await Survey.exists({name: surveyName});
+      if (result != null) return res.status(403).json({message: "Survey exisits"});
+      // Insert survey
+      var result = await Survey.insertMany({
+        _id: new ObjectId(),
+        name: surveyName,
+        questions: [],
+        responses: [],
+      })
+      var surveyId = result[0]._id;
+    // Insert the question
+    // Add the Ids of the question in the survey
+    // Insert the survey Id in the surveylist in Projects
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message: "Server Error!"});
+  }
 }
 
 const getSurveyListController = async (req, res) => {
