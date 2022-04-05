@@ -45,7 +45,7 @@ const sendResponseController = async (req, res) => {
         enumratorId: response.enumratorId,
       }]);
 
-      // await Survey.updateOne({ _id: response.surveyId }, { $push: { "responses": responseId } }, (res, err) => res.status(200)).clone();
+      await Survey.updateOne({ _id: response.surveyId }, { $push: { "responses": responseId } }).clone();
     }
     res.status(200).json({ message: "success" })
   } catch (error) {
@@ -53,7 +53,6 @@ const sendResponseController = async (req, res) => {
     return res.status(500).json({ message: "Server Error" });
   }
 }
-
 
 // *** NEEDS TO BE TESTED HARD ****
 const deleteSurveyController = async (req, res, next) => {
