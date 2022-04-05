@@ -11,7 +11,6 @@ const showSchema = new mongoose.Schema({
   },
   responseId: {
     type: mongoose.Types.ObjectId,
-    required: true,
   },
 })
 
@@ -35,8 +34,13 @@ const questionSchema = new mongoose.Schema({
     type: Boolean,
     required: true
   },
-  showIf: showSchema,
-  options: choiceSchema,
+  showIf: {
+    type: showSchema,
+    required: function() {
+      return typeof this.showIf === 'undefined' || (this.showIf != null && typeof this.showIf != 'object')
+    }
+  },
+  options: [choiceSchema],
   questionText: {
     type: String,
     required: true
