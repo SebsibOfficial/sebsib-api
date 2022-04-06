@@ -35,7 +35,7 @@ module.exports = accessControl = (level) => {
         res.json({messsage: 'You don\'t have access'})
         break;
       case 4:
-        await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) || await authorizeRoleFor(token, enums.ROLES.OWNER) || authorizeRoleFor(enums.ROLES.MEMBER)? 
+        await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) || await authorizeRoleFor(token, enums.ROLES.OWNER) || authorizeRoleFor(token, enums.ROLES.MEMBER)? 
         next() : 
         res.json({messsage: 'You don\'t have access'})
         break;
