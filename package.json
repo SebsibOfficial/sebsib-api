@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "start:dev": "NODE_ENV=dev nodemon index.js"
+    "start:linux:dev": "NODE_ENV=dev nodemon index.js",
+    "start:win:dev": "set NODE_ENV=dev&& nodemon index.js"
   },
   "repository": {
     "type": "git",
