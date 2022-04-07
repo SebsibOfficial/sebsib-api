@@ -89,6 +89,40 @@ const getSurveyListController = async (req, res) => {
   }
 }
 
+const getResponsesController = async (req, res) => {
+  const surveyId = req.params.surveyId;
+  try {
+    const survey = await Survey.aggregate([
+      {
+        "$match": {
+          "_id": new ObjectId(surveyId)
+        }
+      },
+      {
+        "$lookup": {
+          "from": "questions",
+          "localField": "questions",
+          "foreignField": "_id",
+          "as": "joined_questions"
+        }
+      },
+      {
+        "$lookup": {
+          "from": "responses",
+          "localField": "responses",
+          "foreignField": "_id",
+          "as": "joined_responses"
+        }  
+      }
+    ]);
+    res.status(200).json({questions: survey[0].joined_questions, responses: survey[0].joined_responses});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({message: "Server Error"});
+  }
+
+}
+
 const getSurveyController = (req, res) => {
   res.json({ message: "Hey from getSurveyController" })
 }
@@ -149,6 +183,7 @@ module.exports = {
   getSurveyListController,
   getRecentSurveyController,
   getSurveyController,
+  getResponsesController,
   sendResponseController,
   deleteSurveyController
 }
