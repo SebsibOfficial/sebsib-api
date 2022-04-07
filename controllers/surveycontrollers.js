@@ -1,4 +1,3 @@
-const req = require('express/lib/request');
 const jwt = require('jsonwebtoken');
 const { Project, Response, Question, Survey } = require("../models");
 const ObjectId = require('mongoose').Types.ObjectId;
