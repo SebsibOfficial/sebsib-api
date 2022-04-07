@@ -14,7 +14,7 @@ router.post('/login', async (req, res) => {
           if (result) {
             var org = await Organization.findOne({ownerId: user._id});
             if (org != null && user.roleId == '623cc24a8b7ab06011bd1e60') {
-              const token = jwt.sign({_id: user._id, role: user.roleId, org: org._id}, process.env.TOKEN_SECRET);
+              const token = jwt.sign({_id: user._id, role: user.roleId, org: org._id}, process.env.TOKEN_SECRET, {expiresIn: '1d'});
               user.password = "*";
               res.status(200).json({token: token, user: user, orgId: org});
             } else res.status(401).json({message: "Wrong credentials"})
