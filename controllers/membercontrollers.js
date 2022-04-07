@@ -113,10 +113,54 @@ const deleteMemberController = async (req, res, next) => {
   res.status(200).json(result);
 }
 
+const addMemberController = async (req, res) => {
+  const projectId = req.params.pid;
+  const memberId = req.params.id;
+  try {
+    const user = await User.findOne({_id: memberId});
+    const project = await Project.findOne({_id: projectId});
+    // Check if the member to-be added exists 
+    if (user == null || project == null) return res.status(404).json({message: 'User or Project doesn\'t exist'});
+    // Check if to-be added user is a member
+    if (user.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
+    // Check if member is already in the project
+    if (user.projectsId.includes(projectId)) return res.status(401).json({message: "User is already in the project"});
+    // Insert the project id in the member
+    var ip = await User.findOneAndUpdate({_id: memberId}, {$push: {projectsId: projectId}});
+    res.status(200).json({member: memberId, project: projectId});
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message: "Server Error"});
+  }
+}
+
+const removeMemberController = async (req, res) => {
+  const projectId = req.params.pid;
+  const memberId = req.params.id;
+  try {
+    const user = await User.findOne({_id: memberId});
+    const project = await Project.findOne({_id: projectId});
+    // Check if the member to-be removed exists 
+    if (user == null || project == null) return res.status(404).json({message: 'User or Project doesn\'t exist'});
+    // Check if to-be removed user is a member
+    if (user.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
+    // Check if member is already in the project
+    if (!user.projectsId.includes(projectId)) return res.status(401).json({message: "User not in the project"});
+    // Remove the project id in the member
+    var rp = await User.findOneAndUpdate({_id: memberId}, {$pull: {projectsId: projectId}});
+    res.status(200).json({member: memberId, project: projectId});
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message: "Server Error"});
+  }
+}
+
 module.exports = {
   createMemberController,
   getMemberListController,
   getMemberController,
   editMemberController,
-  deleteMemberController
+  deleteMemberController,
+  addMemberController,
+  removeMemberController
 }
