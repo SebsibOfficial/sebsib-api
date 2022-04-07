@@ -29,24 +29,24 @@ const createSurveyController = async (req, res) => {
 */
   var projectId = req.params.projectId;
   var quesIds = []; var surveyId;
-  var {surveyName, questions} = req.body;
+  var { surveyName, questions } = req.body;
   try {
     // Create the survey
-      // Check if there are similarly named surveys
-      var result = await Survey.exists({name: surveyName});
-      if (result != null) return res.status(403).json({message: "Survey exisits"});
-      // Insert survey
-      var result = await Survey.insertMany({
-        _id: new ObjectId(),
-        name: surveyName,
-        questions: [],
-        responses: [],
-      })
-      surveyId = result[0]._id;
-      // Get the question Id's
-      for (let i = 0; i < questions.length; i++) {
-        quesIds.push(questions[i].id);      
-      }
+    // Check if there are similarly named surveys
+    var result = await Survey.exists({ name: surveyName });
+    if (result != null) return res.status(403).json({ message: "Survey exisits" });
+    // Insert survey
+    var result = await Survey.insertMany({
+      _id: new ObjectId(),
+      name: surveyName,
+      questions: [],
+      responses: [],
+    })
+    surveyId = result[0]._id;
+    // Get the question Id's
+    for (let i = 0; i < questions.length; i++) {
+      quesIds.push(questions[i].id);
+    }
     // Insert the question
     for (let i = 0; i < questions.length; i++) {
       var question = questions[i];
@@ -54,22 +54,22 @@ const createSurveyController = async (req, res) => {
         _id: new ObjectId(question.id),
         hasShowPattern: question.showPattern.hasShow,
         showIf: question.showPattern.hasShow ? {
-          questionId: question.showPattern.showIfQues, 
+          questionId: question.showPattern.showIfQues,
           answerId: question.showPattern.ansIs
         } : null,
         options: question.choices,
         questionText: question.question,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
-      });         
+      });
     }
     // Insert the Ids of the question in the survey
-    var iis = await Survey.updateOne({_id: surveyId}, {$push: {questions: quesIds}})
+    var iis = await Survey.updateOne({ _id: surveyId }, { $push: { questions: quesIds } })
     // Insert the survey Id in the surveylist in Projects
-    var iip = await Project.updateOne({_id: projectId}, {$push: {surveysId: surveyId}})
-    res.status(200).json({iip, iis, iq});
+    var iip = await Project.updateOne({ _id: projectId }, { $push: { surveysId: surveyId } })
+    res.status(200).json({ iip, iis, iq });
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server Error!"});
+    res.status(500).json({ message: "Server Error!" });
   }
 
 }
@@ -111,19 +111,69 @@ const getResponsesController = async (req, res) => {
           "localField": "responses",
           "foreignField": "_id",
           "as": "joined_responses"
-        }  
+        }
       }
     ]);
-    res.status(200).json({questions: survey[0].joined_questions, responses: survey[0].joined_responses});
+    res.status(200).json({ questions: survey[0].joined_questions, responses: survey[0].joined_responses });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({message: "Server Error"});
+    return res.status(500).json({ message: "Server Error" });
   }
 
 }
 
-const getSurveyController = (req, res) => {
-  res.json({ message: "Hey from getSurveyController" })
+const getSurveyController = async (req, res) => {
+  const surveyId = req.params.id;
+
+  // try {
+  //   var survey = await Survey.findById(surveyId);
+  //   var questions = [];
+
+  //   for (let i = 0; i < survey.questions.length; i++) {
+  //     var question = await Question.findById(survey.questions[i]);
+  //     questions.push(question);
+  //   }
+
+  //   // the survey data is in survey and question data is in questions
+  //   // map the appropriate values and return to request
+  //   res.status(200).json({ message: surveyId })
+  // } catch (error) {
+  //   console.log(error);
+  //   return res.status(500).json({ message: "Server Error" });
+  // }
+
+  // the method below is a more efficient approach
+
+  try {
+    var survey = survey = Survey.aggregate([
+      {
+        "$match": {
+          "_id": new ObjectId(surveyId)
+        }
+      },
+      {
+        "$lookup": {
+          "from": "questions",
+          "localField": "questions",
+          "foreignField": "_id",
+          "as": "joined_questions",
+        }
+      },
+      {
+        "$lookup": {
+          "from": "responses",
+          "localField": "responses",
+          "foreignField": "_id",
+          "as": "joined_responses",
+        }
+      }
+    ]);
+
+    res.status(200).json({ message: survey })
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
 }
 
 const getRecentSurveyController = (req, res, next) => {
