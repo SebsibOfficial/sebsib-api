@@ -31,14 +31,18 @@ module.exports = async (token, forParam) => {
   if (package.name == enums.PACKAGES.UNLIMITED) {
     return true;
   }
+  
+  // Check if package has expired
+  var expiresAt = new Date(orgs[0].expires);
+  if (expiresAt.getTime() < new Date().getTime()) return 'expired';
 
   switch (forParam) {
     case 'MEMBER':
-      return memberCount >= package.members ? 'curr_member='+memberCount : true
+      return memberCount >= package.members ? 'not enough; mc='+memberCount : true
     case 'PROJECT':
-      return projectCount >= package.projects ? 'curr_project='+projectCount : true
+      return projectCount >= package.projects ? 'not enough; pc='+projectCount : true
     case 'SURVEY':
-      return surveyCount >= package.surveys ? 'curr_survey='+surveyCount : true
+      return surveyCount >= package.surveys ? 'not enough; sc='+surveyCount : true
     default:
       break;
   }
