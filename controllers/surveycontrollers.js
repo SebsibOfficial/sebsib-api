@@ -41,6 +41,9 @@ const createSurveyController = async (req, res) => {
         name: surveyName,
         questions: [],
         responses: [],
+        description: '',
+        pic: '',
+        createdOn: new Date()
       })
       surveyId = result[0]._id;
       // Get the question Id's
@@ -60,6 +63,7 @@ const createSurveyController = async (req, res) => {
         options: question.choices,
         questionText: question.question,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
+        createdOn: new Date()
       });         
     }
     // Insert the Ids of the question in the survey
@@ -146,6 +150,7 @@ const sendResponseController = async (req, res) => {
         answers: response.answers,
         sentDate: response.sentDate,
         enumratorId: response.enumratorId,
+        createdOn: new Date()
       }]);
 
       await Survey.updateOne({ _id: response.surveyId }, { $push: { "responses": responseId } }).clone();

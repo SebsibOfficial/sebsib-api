@@ -18,7 +18,10 @@ const createProjectController = async (req, res) => {
     var Projectresult = await Project.insertMany([{
       _id: new ObjectId(),
       name: projectName,
+      description: '',
+      pic: '',
       surveysId: [],
+      createdOn: new Date()
     }])
     var pid = Projectresult[0]._id;
   

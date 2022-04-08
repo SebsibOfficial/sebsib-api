@@ -48,6 +48,10 @@ const questionSchema = new mongoose.Schema({
   inputType: {
     type: mongoose.Types.ObjectId,
     required: true,
+  },
+  createdOn: {
+    type: Date,
+    default: Date.now
   }
 })
 
