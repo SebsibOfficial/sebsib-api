@@ -125,27 +125,8 @@ const getResponsesController = async (req, res) => {
 const getSurveyController = async (req, res) => {
   const surveyId = req.params.id;
 
-  // try {
-  //   var survey = await Survey.findById(surveyId);
-  //   var questions = [];
-
-  //   for (let i = 0; i < survey.questions.length; i++) {
-  //     var question = await Question.findById(survey.questions[i]);
-  //     questions.push(question);
-  //   }
-
-  //   // the survey data is in survey and question data is in questions
-  //   // map the appropriate values and return to request
-  //   res.status(200).json({ message: surveyId })
-  // } catch (error) {
-  //   console.log(error);
-  //   return res.status(500).json({ message: "Server Error" });
-  // }
-
-  // the method below is a more efficient approach
-
   try {
-    var survey = survey = Survey.aggregate([
+    var _survey = await Survey.aggregate([
       {
         "$match": {
           "_id": new ObjectId(surveyId)
@@ -169,7 +150,18 @@ const getSurveyController = async (req, res) => {
       }
     ]);
 
-    res.status(200).json({ message: survey })
+    var survey = _survey[0];
+    console.log(survey);
+    res.status(200).json({ 
+      _id: survey._id, 
+      name: survey.name, 
+      questions: survey.joined_questions, 
+      responses: survey.joined_responses 
+      /*, description: survey.description, 
+      picture: survey.picture, 
+      createdOn: survey.createdOn */ 
+    });
+
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
