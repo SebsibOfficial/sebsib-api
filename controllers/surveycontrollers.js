@@ -32,21 +32,25 @@ const createSurveyController = async (req, res) => {
   var { surveyName, questions } = req.body;
   try {
     // Create the survey
-    // Check if there are similarly named surveys
-    var result = await Survey.exists({ name: surveyName });
-    if (result != null) return res.status(403).json({ message: "Survey exisits" });
-    // Insert survey
-    var result = await Survey.insertMany({
-      _id: new ObjectId(),
-      name: surveyName,
-      questions: [],
-      responses: [],
-    })
-    surveyId = result[0]._id;
-    // Get the question Id's
-    for (let i = 0; i < questions.length; i++) {
-      quesIds.push(questions[i].id);
-    }
+      // Check if there are similarly named surveys
+      var result = await Survey.exists({name: surveyName});
+      if (result != null) return res.status(403).json({message: "Survey exisits"});
+      // Insert survey
+      var result = await Survey.insertMany({
+        _id: new ObjectId(),
+        name: surveyName,
+        questions: [],
+        responses: [],
+        description: '',
+        pic: '',
+        createdOn: new Date()
+      })
+      surveyId = result[0]._id;
+      // Get the question Id's
+      for (let i = 0; i < questions.length; i++) {
+        quesIds.push(questions[i].id);      
+      }
+
     // Insert the question
     for (let i = 0; i < questions.length; i++) {
       var question = questions[i];
@@ -60,7 +64,8 @@ const createSurveyController = async (req, res) => {
         options: question.choices,
         questionText: question.question,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
-      });
+        createdOn: new Date()
+      });         
     }
     // Insert the Ids of the question in the survey
     var iis = await Survey.updateOne({ _id: surveyId }, { $push: { questions: quesIds } })
@@ -188,6 +193,7 @@ const sendResponseController = async (req, res) => {
         answers: response.answers,
         sentDate: response.sentDate,
         enumratorId: response.enumratorId,
+        createdOn: new Date()
       }]);
 
       await Survey.updateOne({ _id: response.surveyId }, { $push: { "responses": responseId } }).clone();

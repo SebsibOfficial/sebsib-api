@@ -47,8 +47,10 @@ const createMemberController = async (req, res, next) => {
     email: email,
     username: username,
     password: hash,
+    pic: '',
+    createdOn: new Date()
   }]);
-  delete result[0].password;
+  result[0].password = '*';
   res.status(200).send(result);
 }
 

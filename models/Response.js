@@ -44,6 +44,10 @@ const responseSchema = new mongoose.Schema({
   enumratorId: {
     type: mongoose.Types.ObjectId,
     required: true
+  },
+  createdOn: {
+    type: Date,
+    default: Date.now
   }
 })
 module.exports = mongoose.model('response', responseSchema)
