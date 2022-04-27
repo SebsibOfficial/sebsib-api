@@ -215,7 +215,7 @@ const getRecentResponseController = async (req, res, next) => {
           "from": "surveys",
           "localField": "surveyId",
           "foreignField": "_id",
-          "as": "survey_name",
+          "as": "survey_obj",
         }
       },
       {
@@ -223,10 +223,14 @@ const getRecentResponseController = async (req, res, next) => {
           "from": "users",
           "localField": "enumratorId",
           "foreignField": "_id",
-          "as": "enum_username",
+          "as": "enum_obj",
         }
       },
     ]).sort({sentDate: -1});
+
+    for (let index = 0; index < _responses.length; index++) {
+      _responses[index].enum_obj[0].password = "*";
+    }
 
     return res.status(200).json({resp: _responses, proj: all_projects});
 
