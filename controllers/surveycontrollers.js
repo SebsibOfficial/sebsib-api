@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { Project, Response, Question, Survey } = require("../models");
+const { Project, Response, Question, Survey, Organization } = require("../models");
 const ObjectId = require('mongoose').Types.ObjectId;
 
 const inputTranslate = require('../utils/translateIds');
@@ -173,8 +173,67 @@ const getSurveyController = async (req, res) => {
   }
 }
 
-const getRecentSurveyController = (req, res, next) => {
-  res.json({ message: "Hey from getRecentSurveyController" })
+const getRecentResponseController = async (req, res, next) => {
+  const orgId = req.params.orgId;
+  var surveys = [];
+  try {
+    // get all the survey in the org
+    var _orgs = await Organization.aggregate([
+      {
+        "$match": {
+          "_id": new ObjectId(orgId)
+        }
+      },
+      {
+        "$lookup": {
+          "from": "projects",
+          "localField": "projectsId",
+          "foreignField": "_id",
+          "as": "joined_projects",
+        }
+      },
+    ]);
+    
+    var all_projects = _orgs[0].joined_projects;
+    for (let index = 0; index < all_projects.length; index++) {
+      const survey_arr = all_projects[index].surveysId;
+      for (let j = 0; j < survey_arr.length; j++) {
+        const element = survey_arr[j];
+        surveys.push(element);
+      }      
+    }
+    
+    // return all the response who have surveyId
+    var _responses = await Response.aggregate([
+      {
+        "$match": {
+          "surveyId": {"$in": surveys}
+        }
+      },
+      {
+        "$lookup": {
+          "from": "surveys",
+          "localField": "surveyId",
+          "foreignField": "_id",
+          "as": "survey_name",
+        }
+      },
+      {
+        "$lookup": {
+          "from": "users",
+          "localField": "enumratorId",
+          "foreignField": "_id",
+          "as": "enum_username",
+        }
+      },
+    ]).sort({sentDate: -1});
+
+    return res.status(200).json({resp: _responses, proj: all_projects});
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message: "Server Error"});
+  }
 }
 
 const sendResponseController = async (req, res) => {
@@ -228,7 +287,7 @@ const deleteSurveyController = async (req, res, next) => {
 module.exports = {
   createSurveyController,
   getSurveyListController,
-  getRecentSurveyController,
+  getRecentResponseController,
   getSurveyController,
   getResponsesController,
   sendResponseController,
