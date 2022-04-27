@@ -58,6 +58,7 @@ const getMemberController = async (req, res, next) => {
   var id = req.params.id;
   try {
     var member = await User.findOne({_id: id});
+    member.password = "*";
     res.status(200).json(member);
   } catch (error) {
     console.log(error);
@@ -93,13 +94,20 @@ const editMemberController = async (req, res, next) => {
     }
   }
   // Edit Member
-  var result = await User.updateOne({_id: userId},{
-    projectsId: projectsId,
-    email: email,
-    username: username,
-    password: hash,
-  });
-  //delete result[0].password;
+  if (password == '') {
+    var result = await User.updateOne({_id: userId},{
+      projectsId: projectsId,
+      email: email,
+      username: username,
+    });
+  } else {
+    var result = await User.updateOne({_id: userId},{
+      projectsId: projectsId,
+      email: email,
+      username: username,
+      password: hash,
+    });
+  }
   res.status(200).send(result);
 }
 
