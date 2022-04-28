@@ -4,8 +4,8 @@ const enums = require('../utils/enums');
 const packageControl = require('../utils/packageControl');
 
 router.post('/createmember', packageControl(enums.CHECK.MEMBER), createMemberController);
-router.post('/createsurvey/:projectId', createSurveyController);
+router.post('/createsurvey/:projectId', packageControl(enums.CHECK.MEMBER), createSurveyController);
 router.post('/createproject', packageControl(enums.CHECK.PROJECT), createProjectController)
-router.post('/sendresponse', sendResponseController)
+router.post('/sendresponse', packageControl(enums.CHECK.PROJECT), sendResponseController)
 
 module.exports = router;

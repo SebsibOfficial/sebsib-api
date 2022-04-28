@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 const {User, Organization} = require('../models');
+const verifyPackage = require('../utils/verifyPackage');
 
 router.post('/login', async (req, res) => {
   var {email, password} = req.body;
@@ -15,6 +16,8 @@ router.post('/login', async (req, res) => {
             var org = await Organization.findOne({ownerId: user._id});
             if (org != null && user.roleId == '623cc24a8b7ab06011bd1e60') {
               const token = jwt.sign({_id: user._id, role: user.roleId, org: org._id, org_name: org.name}, process.env.TOKEN_SECRET, {expiresIn: '1d'});
+              var package = await verifyPackage(token, '');
+              if (package == 'expired') res.status(401).json({message: "Package has Expired!"})
               user.password = "*";
               res.status(200).json({token: token, user: user, orgId: org});
             } else res.status(401).json({message: "Wrong credentials"})
