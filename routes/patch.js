@@ -3,7 +3,7 @@ const { editSettingsController, editMemberController, addMemberController, remov
 
 router.patch('/editsettings/:orgId', editSettingsController);
 router.patch('/editmember/:id', editMemberController)
-router.patch('/addmember/:pid/:id', addMemberController);
+router.patch('/addmembers/:pid', addMemberController);
 router.patch('/removemember/:pid/:id', removeMemberController);
 
 module.exports = router;

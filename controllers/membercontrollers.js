@@ -125,19 +125,25 @@ const deleteMemberController = async (req, res, next) => {
 
 const addMemberController = async (req, res) => {
   const projectId = req.params.pid;
-  const memberId = req.params.id;
+  const memberIds = req.body.members;
   try {
-    const user = await User.findOne({_id: memberId});
+    const users = await User.find({_id: {$in : memberIds}});
     const project = await Project.findOne({_id: projectId});
     // Check if the member to-be added exists 
-    if (user == null || project == null) return res.status(404).json({message: 'User or Project doesn\'t exist'});
+    if (users.length == 0 || project == null) return res.status(404).json({message: 'User or Project doesn\'t exist: '});
     // Check if to-be added user is a member
-    if (user.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
+    for (let index = 0; index < users.length; index++) {
+      const element = users[index];
+      if (element.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
+    }
     // Check if member is already in the project
-    if (user.projectsId.includes(projectId)) return res.status(401).json({message: "User is already in the project"});
+    for (let index = 0; index < users.length; index++) {
+      const element = users[index];
+      if (element.projectsId.includes(projectId)) return res.status(401).json({message: "User is already in the project"});      
+    }
     // Insert the project id in the member
-    var ip = await User.findOneAndUpdate({_id: memberId}, {$push: {projectsId: projectId}});
-    res.status(200).json({member: memberId, project: projectId});
+    var ip = await User.updateMany({_id: {$in : memberIds}}, {$push: {projectsId: projectId}});
+    res.status(200).json({members: memberIds, project: projectId});
   } catch (error) {
     console.log(error);
     res.status(500).json({message: "Server Error"});
