@@ -24,10 +24,10 @@ const createProjectController = async (req, res) => {
       createdOn: new Date()
     }])
     var pid = Projectresult[0]._id;
-  
+
     // Add project into User.projectsId
     for (var i = 0; i < enumrators.length; i++) {
-      var Userres = await User.updateOne({_id: enumrators[0]}, {$push: {projectsId: pid}})
+      var Userres = await User.updateOne({_id: enumrators[i]}, {$push: {projectsId: pid}})
     }
 
     // Add project into Org.projectsId
