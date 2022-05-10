@@ -15,7 +15,7 @@ router.post('/login', async (req, res) => {
           if (result) {
             var org = await Organization.findOne({ownerId: user._id});
             if (org != null && user.roleId == '623cc24a8b7ab06011bd1e60') {
-              const token = jwt.sign({_id: user._id, role: user.roleId, org: org._id, org_name: org.name}, process.env.TOKEN_SECRET, {expiresIn: '1d'});
+              const token = jwt.sign({_id: user._id, role: user.roleId, org: org._id, org_name: org.name, email: user.email}, process.env.TOKEN_SECRET, {expiresIn: '1d'});
               var package = await verifyPackage(token, '');
               if (package == 'expired') res.status(401).json({message: "Package has Expired!"})
               user.password = "*";
