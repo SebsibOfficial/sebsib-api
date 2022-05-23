@@ -247,10 +247,10 @@ const sendResponseController = async (req, res) => {
     // loop through list to create a response reference and find survey to modify
     for (let i = 0; i < responseData.length; i++) {
       var response = responseData[i];
-      var responseId = response.id;
+      var responseId = response._id;
 
       await Response.insertMany([{
-        _id: response.id,
+        _id: responseId,
         surveyId: response.surveyId,
         name: response.name,
         answers: response.answers,
