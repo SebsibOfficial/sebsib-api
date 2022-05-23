@@ -6,6 +6,6 @@ const packageControl = require('../utils/packageControl');
 router.post('/createmember', packageControl(enums.CHECK.MEMBER), createMemberController);
 router.post('/createsurvey/:projectId', packageControl(enums.CHECK.SURVEY), createSurveyController);
 router.post('/createproject', packageControl(enums.CHECK.PROJECT), createProjectController)
-router.post('/sendresponse', packageControl(enums.CHECK.PROJECT), sendResponseController)
+router.post('/sendresponse', sendResponseController)
 
 module.exports = router;
