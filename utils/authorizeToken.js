@@ -7,6 +7,7 @@ module.exports = authorizeToken = (req, res, next) => {
   if (!token) return res.status(401).json({message: 'Access Denied'});
 
   try {
+    // TODO Decrypt the AES here first
     const verified = jwt.verify(token, process.env.TOKEN_SECRET);
     req.user = verified;
   } catch (error) {

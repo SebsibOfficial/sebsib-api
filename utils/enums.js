@@ -13,5 +13,12 @@ module.exports = {
     MEMBER: "MEMBER",
     SURVEY: "SURVEY",
     PROJECT: "PROJECT"
-  }
+  },
+  PLATFORMS:[
+    "SEBSIB_OFFICE_1",
+    "SEBSIB_COLLECT_2"
+  ],
+  IP_WHITELIST:[
+    "127.0.0.1"
+  ]
 }
