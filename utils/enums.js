@@ -17,8 +17,5 @@ module.exports = {
   PLATFORMS:[
     "SEBSIB_OFFICE_1",
     "SEBSIB_COLLECT_2"
-  ],
-  IP_WHITELIST:[
-    "127.0.0.1"
   ]
 }
