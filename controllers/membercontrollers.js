@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const ObjectId = require('mongoose').Types.ObjectId;
 const mongodb = require('mongodb');
+const getToken = require('../utils/getToken')
 
 const getMemberListController = async (req, res, next) => {
   var orgId = req.params.orgId;
@@ -19,7 +20,7 @@ const getMemberListController = async (req, res, next) => {
 
 const createMemberController = async (req, res, next) => {
   var {email, password, username, projectsId} = req.body;
-  var orgId = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET).org;
+  var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
   try {
     // Check if string is an email
     if (!validator.isEmail(email)) {

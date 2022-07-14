@@ -1,10 +1,11 @@
 const { Organization, Project, User, Survey, Response, Question } = require("../models");
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
+const getToken = require('../utils/getToken')
 
 const createProjectController = async (req, res) => {
   var {projectName, enumrators} = req.body;
-  var orgId = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET).org;
+  var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
   try {
     
     // Check if enumurators(members) exist in the organization
@@ -57,7 +58,7 @@ const getProjectListController = async (req, res) => {
  // ***MORE TESTING IS NEED ON THIS CONTROLLER***
 const deleteProjectController = async (req, res, next) => {
   const projectId = req.params.id;
-  var orgId = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET).org;
+  var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
   var surveyIDs = [], respIDs = [], questionIDs = [];
   try {
     // Get survey IDs
