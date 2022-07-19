@@ -22,7 +22,7 @@ mongoose.connect(process.env.NODE_ENV == 'dev' ? process.env.TEST_DB_URL : proce
 .then(() => app.listen(process.env.PORT, () => console.log("Server Running at "+process.env.PORT+"..."))) // Connect to the Database
 app.use(limiter); // Limit requests
 app.use(cors()); // Enable CORS
-app.use(authorizeKey); // Verify API Key in header
+//app.use(authorizeKey); // Verify API Key in header
 app.use(bodyParser.json()); // Parsing JSON body
 
 // Main routes
