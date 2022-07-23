@@ -22,13 +22,9 @@ module.exports = authorizeKey = (req, res, next) => {
   try {
     var originalText = bytes.toString(CryptoJS.enc.Utf8);
     var auth_object = JSON.parse(originalText);
-    // if (
-    //   !enums.PLATFORMS.includes(auth_object.PLATFORM_ID) ||
-    //   !JSON.parse(process.env.IP_WHITELIST).includes(ip)
-    // ) {
-    //   console.log("Unauthorized");
-    //   return res.status(401).json({ message: "Access Denied" });
-    // }
+    if ( !enums.PLATFORMS.includes(auth_object.PLATFORM_ID) ) {
+      return res.status(401).json({ message: "Access Denied" });
+    }
   } catch (error) {
     return res.status(401).json({ message: "Access Denied" });
   }

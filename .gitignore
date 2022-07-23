@@ -4,3 +4,4 @@ node_modules
 
 sebsib_play.mongodb
 *.bat
+keys/*
