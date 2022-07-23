@@ -2,9 +2,11 @@ const { Organization, Project, User, Survey, Response, Question } = require("../
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
 const getToken = require('../utils/getToken')
+const sanitizeAll = require('../utils/genSantizer');
 
 const createProjectController = async (req, res) => {
   var {projectName, enumrators} = req.body;
+  projectName = sanitizeAll(projectName);enumrators = sanitizeAll(enumrators);
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
   try {
     
@@ -42,7 +44,7 @@ const createProjectController = async (req, res) => {
 }
 
 const getProjectListController = async (req, res) => {
-  var orgId = req.params.orgId;
+  var orgId = sanitizeAll(req.params.orgId);
   try {
     var Orgs = await Organization.aggregate([
       {$lookup: { from: 'projects', localField: 'projectsId', foreignField: '_id', as: 'project_docs'}}
@@ -57,7 +59,7 @@ const getProjectListController = async (req, res) => {
 }
  // ***MORE TESTING IS NEED ON THIS CONTROLLER***
 const deleteProjectController = async (req, res, next) => {
-  const projectId = req.params.id;
+  const projectId = sanitizeAll(req.params.id);
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
   var surveyIDs = [], respIDs = [], questionIDs = [];
   try {

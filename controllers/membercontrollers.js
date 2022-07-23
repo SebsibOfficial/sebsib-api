@@ -5,9 +5,11 @@ const bcrypt = require('bcrypt');
 const ObjectId = require('mongoose').Types.ObjectId;
 const mongodb = require('mongodb');
 const getToken = require('../utils/getToken')
+const sanitizeAll = require('../utils/genSantizer');
 
 const getMemberListController = async (req, res, next) => {
   var orgId = req.params.orgId;
+  orgId = sanitizeAll(orgId);
   if (orgId == null) return res.status(400).json({message: 'Bad Input'})
   try {
     const memberlist = await User.find({organizationId: orgId})
@@ -20,6 +22,7 @@ const getMemberListController = async (req, res, next) => {
 
 const createMemberController = async (req, res, next) => {
   var {email, password, username, projectsId} = req.body;
+  email = sanitizeAll(email); password = sanitizeAll(password);username = sanitizeAll(username); projectsId = sanitizeAll(projectsId);
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
   try {
     // Check if string is an email
@@ -61,7 +64,7 @@ const createMemberController = async (req, res, next) => {
 }
 
 const getMemberController = async (req, res, next) => {
-  var id = req.params.id;
+  var id = sanitizeAll(req.params.id);
   try {
     var member = await User.findOne({_id: id});
     member.password = "*";
@@ -74,7 +77,9 @@ const getMemberController = async (req, res, next) => {
 
 const editMemberController = async (req, res, next) => {
   var {email, password, username, projectsId} = req.body;
-  var userId = req.params.id;
+  var userId = sanitizeAll(req.params.id);
+  email = sanitizeAll(email); password = sanitizeAll(password);username = sanitizeAll(username); projectsId = sanitizeAll(projectsId);
+  
   try {
     // Check if string is an email
     if (!validator.isEmail(email)) {
@@ -122,7 +127,7 @@ const editMemberController = async (req, res, next) => {
 }
 
 const deleteMemberController = async (req, res, next) => {
-  const id = req.params.id;
+  const id = sanitizeAll(req.params.id);
   try {
     const user = await User.findOne({_id: id});
     // Check if the user to-be deleted exists 
@@ -139,8 +144,8 @@ const deleteMemberController = async (req, res, next) => {
 }
 
 const addMemberController = async (req, res) => {
-  const projectId = req.params.pid;
-  const memberIds = req.body.members;
+  const projectId = sanitizeAll(req.params.pid);
+  const memberIds = sanitizeAll(req.body.members);
   try {
     const users = await User.find({_id: {$in : memberIds}});
     const project = await Project.findOne({_id: projectId});
@@ -166,8 +171,8 @@ const addMemberController = async (req, res) => {
 }
 
 const removeMemberController = async (req, res) => {
-  const projectId = req.params.pid;
-  const memberId = req.params.id;
+  const projectId = sanitizeAll(req.params.pid);
+  const memberId = sanitizeAll(req.params.id);
   try {
     const user = await User.findOne({_id: memberId});
     const project = await Project.findOne({_id: projectId});
