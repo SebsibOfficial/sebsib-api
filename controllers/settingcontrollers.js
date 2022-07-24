@@ -2,11 +2,14 @@ const { Organization, User } = require("../models");
 const jwt = require('jsonwebtoken');
 const validator = require("validator");
 const bcrypt = require('bcrypt');
+const getToken = require('../utils/getToken')
+const sanitizeAll = require('../utils/genSantizer');
 
 const editSettingsController = async (req, res) => {
-  var orgId = req.params.orgId;
-  var userID = jwt.verify(req.header('auth-token'), process.env.TOKEN_SECRET)._id;
+  var orgId = sanitizeAll(req.params.orgId);
+  var userID = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET)._id;
   var {name, email, Opassword, Npassword} = req.body;
+  email = sanitizeAll(email); name = sanitizeAll(name);Opassword = sanitizeAll(Opassword); Npassword = sanitizeAll(Npassword);
   try {
     var user = await User.findById(userID);
 

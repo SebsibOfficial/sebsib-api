@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { Project, Response, Question, Survey, Organization } = require("../models");
 const ObjectId = require('mongoose').Types.ObjectId;
-
+const sanitizeAll = require('../utils/genSantizer');
 const inputTranslate = require('../utils/translateIds');
 
 const createSurveyController = async (req, res) => {
@@ -27,9 +27,10 @@ const createSurveyController = async (req, res) => {
   }]
 }
 */
-  var projectId = req.params.projectId;
+  var projectId = sanitizeAll(req.params.projectId);
   var quesIds = []; var surveyId;
   var { surveyName, questions } = req.body;
+  surveyName = sanitizeAll(surveyName);
   try {
     // Create the survey
       // Check if there are similarly named surveys
@@ -80,7 +81,7 @@ const createSurveyController = async (req, res) => {
 }
 
 const getSurveyListController = async (req, res) => {
-  var projectId = req.params.projectId;
+  var projectId = sanitizeAll(req.params.projectId);
   try {
     var projects = await Project.aggregate([
       { $lookup: { from: 'surveys', localField: 'surveysId', foreignField: '_id', as: 'survey_docs' } }
@@ -94,7 +95,7 @@ const getSurveyListController = async (req, res) => {
 }
 
 const getResponsesController = async (req, res) => {
-  const surveyId = req.params.surveyId;
+  const surveyId = sanitizeAll(req.params.surveyId);
   try {
     const survey = await Survey.aggregate([
       {
@@ -128,7 +129,7 @@ const getResponsesController = async (req, res) => {
 }
 
 const getSurveyController = async (req, res) => {
-  const surveyId = req.params.id;
+  const surveyId = sanitizeAll(req.params.id);
 
   try {
     var _survey = await Survey.aggregate([
@@ -174,7 +175,7 @@ const getSurveyController = async (req, res) => {
 }
 
 const getRecentResponseController = async (req, res, next) => {
-  const orgId = req.params.orgId;
+  const orgId = sanitizeAll(req.params.orgId);
   var surveys = [];
   try {
     // get all the survey in the org
@@ -270,8 +271,8 @@ const sendResponseController = async (req, res) => {
 
 // *** NEEDS TO BE TESTED HARD ****
 const deleteSurveyController = async (req, res, next) => {
-  const Projectid = req.params.pid;
-  const SurveyId = req.params.sid;
+  const Projectid = sanitizeAll(req.params.pid);
+  const SurveyId = sanitizeAll(req.params.sid);
   try {
     // Check if SurveyId is in Project
     var project = await Project.findById(Projectid);

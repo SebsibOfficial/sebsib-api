@@ -1,5 +1,6 @@
 const authorizeRoleFor = require('./authorizeRoleFor');
 const enums = require('./enums');
+const getToken = require('../utils/getToken')
 
 /* 
 
@@ -17,7 +18,7 @@ module.exports = accessControl = (level) => {
   // The reason for the `accessControl[level] || (accessControl[level]` is to stop memory leaks 
   // by stopping the creation of inner functions with out closure.
   return accessControl[level] || (accessControl[level] = async function(req, res, next) {
-    const token = req.header('auth-token');
+    const token = getToken(req.header('Authorization'));
     switch (level) {
       case 1:
         await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) ? 

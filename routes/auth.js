@@ -4,9 +4,11 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const {User, Organization} = require('../models');
 const verifyPackage = require('../utils/verifyPackage');
+const sanitizeAll = require('../utils/genSantizer');
 
 router.post('/login', async (req, res) => {
   var {email, password} = req.body;
+  email = sanitizeAll(email); password = sanitizeAll(password);
   if (email != undefined && password != undefined && validator.isEmail(email)) {
     try {
       const user = await User.findOne({email: email});
@@ -33,6 +35,7 @@ router.post('/login', async (req, res) => {
 
 router.post('/fillsettings', async (req, res) => {
   var {email, password, org} = req.body;
+  email = sanitizeAll(email); password = sanitizeAll(password); org = sanitizeAll(org);
   try {
     var org_obj = await Organization.findOne({name: org});
     var org_id = org_obj._id;
