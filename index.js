@@ -17,9 +17,22 @@ const limiter = rateLimit({
 
 const app = express(); // Start the Server
 dotenv.config(); // Configure to access .env files
-mongoose.connect(process.env.NODE_ENV == 'dev' ? process.env.TEST_DB_URL : process.env.PROD_DB_URL)
-.catch(error => console.error(error))
-.then(() => app.listen(3000, () => console.log("Server Running at 3000..."))) // Connect to the Database
+if (process.env.NODE_ENV == 'dev') {
+	mongoose.connect(process.env.TEST_DB_URL)
+	.catch(error => console.error(error))
+	.then(() => app.listen(3000, () => console.log("API @ 3000 & DB @ "+process.env.TEST_DB_URL))) // Connect to the Database
+} 
+else {
+	mongoose.connect(process.env.PROD_DB_URL, {
+		authSource: "admin",
+		user: process.env.DB_USER,
+		pass: process.env.DB_PASS,
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	})
+	.catch(error => console.error(error))
+	.then(() => app.listen(3000, () => console.log("API @ 3000 & DB @ "+process.env.PROD_DB_URL))) // Connect to the Database
+}
 
 app.use(limiter); // Limit requests
 app.use(cors()); // Enable CORS
