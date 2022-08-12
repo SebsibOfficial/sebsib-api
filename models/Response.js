@@ -14,13 +14,6 @@ const answerScheme = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     required: true,
   },
-<<<<<<< HEAD
-/*  answer: {
-    type: String,
-    required: true,
-  }*/
-=======
->>>>>>> 9d4da854b6d8e52de389e4141af4c34402c02f2e
   answer: mongoose.SchemaTypes.Mixed
 }, {strict: false})
 
