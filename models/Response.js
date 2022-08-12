@@ -14,11 +14,8 @@ const answerScheme = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     required: true,
   },
-  answer: {
-    type: String,
-    required: true,
-  }
-})
+  answer: mongoose.SchemaTypes.Mixed
+}, {strict: false})
 
 const responseSchema = new mongoose.Schema({
   _id: {
