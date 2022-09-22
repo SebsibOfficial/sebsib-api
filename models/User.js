@@ -21,9 +21,20 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  username: {
+  phone: {
     type: String,
-    default: null
+    required: false,
+    default: ''
+  },
+  firstName: {
+    type: String,
+    required: false,
+    default: ''
+  },
+  lastName: {
+    type: String,
+    required: false,
+    default: ''
   },
   password: {
     type: String,

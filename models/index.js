@@ -7,6 +7,7 @@ const Response = require('./Response');
 const Role = require('./Role');
 const Survey = require('./Survey');
 const User = require('./User');
+const Request = require('./Request');
 
 module.exports = {
   InputType,
@@ -17,5 +18,6 @@ module.exports = {
   Response,
   Role,
   Survey,
-  User
+  User,
+  Request
 }

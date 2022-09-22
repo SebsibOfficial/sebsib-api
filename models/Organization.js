@@ -9,6 +9,14 @@ const orgSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     required: true,
   },
+  orgId: {
+    type: String,
+    required: true
+  },
+  hassPassChange: {
+    type: Boolean,
+    required: true
+  },
   packageId: {
     type: mongoose.Types.ObjectId,
     required: true,
