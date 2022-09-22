@@ -120,7 +120,7 @@ const getResponsesController = async (req, res) => {
         }
       }
     ]);
-    res.status(200).json({ questions: survey[0].joined_questions, responses: survey[0].joined_responses });
+    res.status(200).json({ questions: survey[0].joined_questions.sort(function(x, y){return x.createdOn - y.createdOn;}), responses: survey[0].joined_responses });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
@@ -161,7 +161,7 @@ const getSurveyController = async (req, res) => {
     res.status(200).json({ 
       _id: survey._id, 
       name: survey.name, 
-      questions: survey.joined_questions, 
+      questions: survey.joined_questions.sort(function(x, y){return x.createdOn - y.createdOn;}), 
       responses: survey.joined_responses 
       /*, description: survey.description, 
       picture: survey.picture, 
