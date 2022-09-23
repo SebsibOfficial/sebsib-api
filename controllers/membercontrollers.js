@@ -21,17 +21,20 @@ const getMemberListController = async (req, res, next) => {
 }
 
 const createMemberController = async (req, res, next) => {
-  var {email, password, username, projectsId} = req.body;
-  email = sanitizeAll(email); password = sanitizeAll(password);username = sanitizeAll(username); projectsId = sanitizeAll(projectsId);
+  var {email, password, phone, firstname, lastname, projectsId} = req.body;
+  
+  email = sanitizeAll(email); password = sanitizeAll(password);phone = sanitizeAll(phone);
+  firstname = sanitizeAll(firstname); lastname = sanitizeAll(lastname); projectsId = sanitizeAll(projectsId);
+
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
   try {
     // Check if string is an email
     if (!validator.isEmail(email)) {
       return res.status(400).json({message: 'Invalid Email'});
     }
-    // Check if username exists
-    if (await User.exists({username: username}) || await User.exists({email: email})) {
-      return res.status(400).json({message: 'Username or Email Exists'});
+    // Check if email exists
+    if (await User.exists({email: email})) {
+      return res.status(400).json({message: 'Email Exists'});
     }
     // Encrypt password
     const salt = bcrypt.genSaltSync(10);
@@ -49,7 +52,9 @@ const createMemberController = async (req, res, next) => {
       projectsId: projectsId,
       roleId: new ObjectId('623cc24a8b7ab06011bd1e5f'),
       email: email,
-      username: username,
+      phone: phone,
+      firstName: firstname,
+      lastName: lastname, 
       password: hash,
       pic: '',
       createdOn: new Date()
