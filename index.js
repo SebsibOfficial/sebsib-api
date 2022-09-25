@@ -17,7 +17,7 @@ const limiter = rateLimit({
 
 const app = express(); // Start the Server
 dotenv.config(); // Configure to access .env files
-if (process.env.NODE_ENV == 'dev') {
+if (process.env.NODE_ENV == 'dev' || process.env.NODE_ENV == 'test') {
 	mongoose.connect(process.env.TEST_DB_URL)
 	.catch(error => console.error(error))
 	.then(() => app.listen(3000, () => console.log("API @ 3000 & DB @ "+process.env.TEST_DB_URL))) // Connect to the Database
@@ -36,7 +36,8 @@ else {
 
 app.use(limiter); // Limit requests
 app.use(cors()); // Enable CORS
-app.use(authorizeKey); // Verify API Key in header
+if (process.env.NODE_ENV != 'test') // Only in Test mode
+	app.use(authorizeKey); // Verify API Key in header
 app.use(bodyParser.json()); // Parsing JSON body
 
 // Main routes

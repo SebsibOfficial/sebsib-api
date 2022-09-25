@@ -1,7 +1,12 @@
 const CryptoJS = require('crypto-js');
 
 module.exports = getToken = (auth) => {
-    
+    // Ignore decryption in Test mode
+    if (process.env.NODE_ENV == 'test'){
+        console.log(auth);
+        return auth;
+    }
+
     const cryptkey = CryptoJS.enc.Utf8.parse(process.env.PRIVATE_KEY);
     const cryptiv = CryptoJS.enc.Utf8.parse(process.env.IV);
     // Decryption
