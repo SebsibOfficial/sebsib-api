@@ -38,6 +38,10 @@ const responseSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  geoPoint: {
+    type: String,
+    required: true
+  },
   enumratorId: {
     type: mongoose.Types.ObjectId,
     required: true
