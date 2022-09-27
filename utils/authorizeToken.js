@@ -10,8 +10,8 @@ module.exports = authorizeToken = (req, res, next) => {
     // TODO Decrypt the AES here first
     const verified = jwt.verify(token, process.env.TOKEN_SECRET);
     req.user = verified;
+    next();
   } catch (error) {
     res.status(400).json({message: 'Invalid Token'});
   }
-  next();
 }
