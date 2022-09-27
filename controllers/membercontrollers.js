@@ -22,7 +22,14 @@ const getMemberListController = async (req, res, next) => {
 
 const createMemberController = async (req, res, next) => {
   var {email, password, phone, firstname, lastname, projectsId} = req.body;
-  
+  // Required fields must not be undefined
+  if (email === undefined || password === undefined || projectsId === undefined) return res.status(400).json({message: 'Bad Input'});
+  // Remove undefined types
+  phone = phone ?? '';
+  firstname = firstname ?? '';
+  lastname = lastname ?? '';
+  // Check password length
+  if (password.length < 8) return res.status(400).json({message: 'Password too short'});
   email = sanitizeAll(email); password = sanitizeAll(password);phone = sanitizeAll(phone);
   firstname = sanitizeAll(firstname); lastname = sanitizeAll(lastname); projectsId = sanitizeAll(projectsId);
 
