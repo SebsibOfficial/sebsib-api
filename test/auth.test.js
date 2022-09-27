@@ -7,7 +7,7 @@ chai.use(chaiHttp);
 
 describe('/auth/login', () => {
     var token = '';
-    it('Responds', (done) => {
+    it('Authenticates proper', (done) => {
         chai.request(server)
         .post('/auth/login')
         .send({email: process.env.TEST_EMAIL, password: process.env.TEST_PASS})
@@ -17,7 +17,7 @@ describe('/auth/login', () => {
             done();
         })
     })
-    it('Authenticates Proper', (done) => {
+    it('Rejects wrong credentials', (done) => {
         chai.request(server)
         .post('/auth/login')
         .send({email: 'incorrect@email.com', password: 'asdas8'})
