@@ -4,7 +4,7 @@ const { getSurveyListController, createSurveyController, getRecentResponseContro
   sendResponseController, deleteSurveyController, getResponsesController } = require('../controllers/surveycontrollers');
 const { getProjectListController, createProjectController, deleteProjectController } = require('../controllers/projectcontrollers');
 const { editSettingsController } = require('../controllers/settingcontrollers');
-const {getAllAccountInfoController,
+const { getDashStatController, getAllAccountInfoController,
   getRequestsController,
   getInfoBriefController,
   getAllInfoController,
@@ -15,7 +15,7 @@ const {getAllAccountInfoController,
   decideRequestController,
   editAccountController,
   deleteAccountController,
-  deleteAdminController,} = require('../controllers/admincontrollers')
+  deleteAdminController, } = require('../controllers/admincontrollers')
 
 
 module.exports = {
@@ -38,6 +38,7 @@ module.exports = {
   getResponsesController,
   removeMemberController,
   addMemberController,
+  getDashStatController,
   getAllAccountInfoController,
   getRequestsController,
   getInfoBriefController,

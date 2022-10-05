@@ -1,6 +1,37 @@
+const { User, Project, Survey, Organization, Response } = require("../models");
+
 const getDashStatController = async (req, res, next) => {
   try {
+    // organization (accounts) count
+    const accountsCount = await Organization.count();
 
+    // admins count
+    const adminsCount = await User.countDocuments({ roleId: { $in: ["623cc24a8b7ab06011bd1e61", "623cc24a8b7ab06011bd1e62"] } });
+
+    // expired orgaznizations count
+    const expAccountsCount = await Organization.countDocuments({ expires: { $lt: new Date() } });
+
+    // members count
+    const membersCount = await User.countDocuments({ roleId: { $nin: ["623cc24a8b7ab06011bd1e61", "623cc24a8b7ab06011bd1e62"] } });
+
+    // projects count
+    const projectsCount = await Project.countDocuments();
+
+    // responses count
+    const responseCount = await Response.countDocuments();
+
+    // surveys count
+    const surveysCount = await Survey.countDocuments();
+
+    return res.status(200).json({
+      "accountsCount": accountsCount,
+      "adminsCount": adminsCount,
+      "expAccountsCount": expAccountsCount,
+      "membersCount": membersCount,
+      "projectsCount": projectsCount,
+      "responseCount": responseCount,
+      "surveysCount": surveysCount,
+    });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }
