@@ -51,6 +51,14 @@ const getAllAccountInfoController = async (req, res, next) => {
           "as": "projects"
         }
       },
+      {
+        "$lookup": {
+          "from": "users",
+          "localField": "_id",
+          "foreignField": "organizationId",
+          "as": "members"
+        }
+      },
     ]);
 
     return res.status(200).json(accounts);
