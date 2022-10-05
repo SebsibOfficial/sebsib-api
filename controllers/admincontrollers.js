@@ -1,4 +1,5 @@
 const { InputType, Organization, Package, Project, Request, Response, Role, Survey, User } = require("../models");
+const ObjectId = require('mongoose').Types.ObjectId;
 const sanitizeAll = require('../utils/genSantizer');
 
 const getDashStatController = async (req, res, next) => {
@@ -73,12 +74,10 @@ const getRequestsController = async (req, res, next) => {
 
     return res.status(200).json(requests);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Server Error" });
   }
 }
 
-// returns all elements of the collection based on a limit
 const getInfoBriefController = async (req, res, next) => {
   try {
     const limit = sanitizeAll(req.params.limit);
@@ -106,7 +105,6 @@ const getInfoBriefController = async (req, res, next) => {
       "roles ": roles,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Server Error" });
   }
 }
@@ -121,22 +119,47 @@ const getAllInfoController = async (req, res, next) => {
     // removes the last s, if a collection name is prular in a request
     if (collection[collection.length - 1] === "s") {
       collection = collection.slice(0, -1);
-    } 
+    }
 
     // get all elements of the collection
-    const elements = await eval(collection).find(); 
-    console.log(elements);
+    const elements = await eval(collection).find();
 
     return res.status(200).json(elements);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Server Error" });
   }
 }
 
 const getAccountInfoController = async (req, res, next) => {
   try {
+    let accountId = sanitizeAll(req.params.id);
 
+    const account = await Organization.aggregate([
+      {
+        "$match": {
+          "_id": new ObjectId(accountId)
+        }
+      },
+      {
+        "$lookup": {
+          "from": "projects",
+          "localField": "projectsId",
+          "foreignField": "_id",
+          "as": "projects"
+        }
+      },
+      {
+        "$lookup": {
+          "from": "users",
+          "localField": "_id",
+          "foreignField": "organizationId",
+          "as": "members"
+        }
+      },
+    ]);
+
+
+    return res.status(200).json(account);
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }
