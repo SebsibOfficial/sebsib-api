@@ -1,4 +1,4 @@
-const { User, Project, Survey, Organization, Response, Request, InputType, Package, Role } = require("../models");
+const { InputType, Organization, Package, Project, Request, Response, Role, Survey, User } = require("../models");
 const sanitizeAll = require('../utils/genSantizer');
 
 const getDashStatController = async (req, res, next) => {
@@ -113,8 +113,23 @@ const getInfoBriefController = async (req, res, next) => {
 
 const getAllInfoController = async (req, res, next) => {
   try {
+    let collection = sanitizeAll(req.params.collection);
 
+    // capitalize first letter if its not capitalized
+    collection = collection.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+
+    // removes the last s, if a collection name is prular in a request
+    if (collection[collection.length - 1] === "s") {
+      collection = collection.slice(0, -1);
+    } 
+
+    // get all elements of the collection
+    const elements = await eval(collection).find(); 
+    console.log(elements);
+
+    return res.status(200).json(elements);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Server Error" });
   }
 }
