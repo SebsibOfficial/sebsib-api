@@ -1,4 +1,5 @@
-const { User, Project, Survey, Organization, Response } = require("../models");
+const { User, Project, Survey, Organization, Response, Request } = require("../models");
+const mongoose = require('mongoose');
 
 const getDashStatController = async (req, res, next) => {
   try {
@@ -60,8 +61,11 @@ const getAllAccountInfoController = async (req, res, next) => {
 
 const getRequestsController = async (req, res, next) => {
   try {
+    const requests = await Request.find()
 
+    return res.status(200).json(requests);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Server Error" });
   }
 }
