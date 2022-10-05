@@ -1,5 +1,5 @@
-const { User, Project, Survey, Organization, Response, Request } = require("../models");
-const mongoose = require('mongoose');
+const { User, Project, Survey, Organization, Response, Request, InputType, Package, Role } = require("../models");
+const sanitizeAll = require('../utils/genSantizer');
 
 const getDashStatController = async (req, res, next) => {
   try {
@@ -70,10 +70,35 @@ const getRequestsController = async (req, res, next) => {
   }
 }
 
+// returns all elements of the collection based on a limit
 const getInfoBriefController = async (req, res, next) => {
   try {
+    const limit = sanitizeAll(req.params.limit);
 
+    const accounts = await Organization.find().limit(limit);
+    const requests = await Request.find().limit(limit);
+    const users = await User.find().limit(limit);
+    const projects = await Project.find().limit(limit);
+    const surveys = await Survey.find().limit(limit);
+    const responses = await Response.find().limit(limit);
+    const inputTypes = await InputType.find().limit(limit);
+    const packages = await Package.find().limit(limit);
+    const roles = await Role.find().limit(limit);
+
+
+    return res.status(200).json({
+      "accounts": accounts,
+      "requests ": requests,
+      "users": users,
+      "projects ": projects,
+      "surveys": surveys,
+      "responses": responses,
+      "inputTypes ": inputTypes,
+      "packages ": packages,
+      "roles ": roles,
+    });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Server Error" });
   }
 }
