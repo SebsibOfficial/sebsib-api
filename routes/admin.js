@@ -20,6 +20,7 @@ router.get('/getallaccountanfo', accessControl(2), getAllAccountInfoController);
 router.get('/getrequests', accessControl(2), getRequestsController);
 router.get('/getinfobrief/:limit', accessControl(2), getInfoBriefController);
 router.get('/getallinfo/:collection', accessControl(2), getAllInfoController);
-router.get('/getaccountinfo/:id', accessControl(4), getAccountInfoController);
+router.get('/getaccountinfo/:id', accessControl(2), getAccountInfoController);
+router.get('/getadmins', accessControl(2), getAdminsController);
 
 module.exports = router;

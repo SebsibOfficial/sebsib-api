@@ -167,7 +167,9 @@ const getAccountInfoController = async (req, res, next) => {
 
 const getAdminsController = async (req, res, next) => {
   try {
-
+    const admins = await User.find({ roleId: { $in: ["623cc24a8b7ab06011bd1e61", "623cc24a8b7ab06011bd1e62"] } });
+    
+    return res.status(200).json(admins);
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }
