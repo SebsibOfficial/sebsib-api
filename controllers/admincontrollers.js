@@ -40,6 +40,19 @@ const getDashStatController = async (req, res, next) => {
 const getAllAccountInfoController = async (req, res, next) => {
   try {
 
+    // get basic infos from all organizations
+    const accounts = await Organization.aggregate([
+      {
+        "$lookup": {
+          "from": "projects",
+          "localField": "projectsId",
+          "foreignField": "_id",
+          "as": "projects"
+        }
+      },
+    ]);
+
+    return res.status(200).json(accounts);
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }

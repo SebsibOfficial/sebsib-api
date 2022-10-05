@@ -15,7 +15,7 @@ const { getDashStatController, getAllAccountInfoController,
 
 const accessControl = require('../utils/accessControl');
 
-router.get('/getDashStat', accessControl(4), getDashStatController);
-
+router.get('/getdashstat', accessControl(2), getDashStatController);
+router.get('/getallaccountanfo', accessControl(4), getAllAccountInfoController);
 
 module.exports = router;
