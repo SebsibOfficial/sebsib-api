@@ -1,4 +1,6 @@
 const { InputType, Organization, Package, Project, Request, Response, Role, Survey, User } = require("../models");
+const bcrypt = require('bcrypt');
+const validator = require("validator");
 const ObjectId = require('mongoose').Types.ObjectId;
 const sanitizeAll = require('../utils/genSantizer');
 
@@ -168,7 +170,7 @@ const getAccountInfoController = async (req, res, next) => {
 const getAdminsController = async (req, res, next) => {
   try {
     const admins = await User.find({ roleId: { $in: ["623cc24a8b7ab06011bd1e61", "623cc24a8b7ab06011bd1e62"] } });
-    
+
     return res.status(200).json(admins);
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
@@ -176,8 +178,80 @@ const getAdminsController = async (req, res, next) => {
 }
 
 const createAccountController = async (req, res, next) => {
-  try {
+  var { accountName, ownerEmail, ownerFirstName, ownerLastName, ownerPhone, packageId, expiryDate } = req.body;
 
+  // check for bad inputs
+  if (accountName === undefined || ownerEmail === undefined || packageId === undefined || expiryDate === undefined) return res.status(400).json({ message: 'Bad Input' });
+
+  // Check if email is valid
+  if (!validator.isEmail(ownerEmail)) {
+    return res.status(400).json({ message: 'Invalid Email' });
+  }
+
+  ownerFirstName = ownerFirstName ?? "";
+  ownerLastName = ownerLastName ?? "";
+  ownerPhone = ownerPhone ?? "";
+
+  try {
+    // check if the account (organization) name is already taken
+    const account = await Organization.findOne({ name: accountName });
+    if (account) {
+      return res.status(400).json({ message: "Account name is already taken" });
+    }
+
+    // check if the owner email is already in use
+    const user = await User.findOne({ email: ownerEmail });
+    if (user) {
+      return res.status(400).json({ message: "Email is already taken" });
+    }
+
+    // for passwords, this is the password that is not hashed yet
+    const _unique6DigitVal = Math.floor(Math
+      .random() * (999999 - 100000 + 1)) + 100000;
+
+    // Encrypt password
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(_unique6DigitVal.toString(), salt);
+
+    const _userId = new ObjectId();
+    const _orgId = new ObjectId();
+
+    const _trimmedOrg = accountName.replaceAll(" ", "");
+    const _customOrgId = _trimmedOrg.toUpperCase().substring(0, 3) + _trimmedOrg.toUpperCase().substring(_trimmedOrg.length - 3, _trimmedOrg.length) + Math.floor(Math.random() * 90 + 10)
+
+    // create a new user, which will be the owner of the new organization
+    const newUser = await User.create({
+      _id: _userId,
+      organizationId: _orgId,
+      projectId: [],
+      roleId: new ObjectId("623cc24a8b7ab06011bd1e60"),
+      email: ownerEmail,
+      phone: ownerPhone,
+      firstName: ownerFirstName,
+      lastName: ownerLastName,
+      password: hash,
+      pic: '',
+      createdAt: new Date(),
+    });
+
+    newUser.password = '*';
+
+    // create a new account (organization)
+    const newAccount = await Organization.create({
+      _id: _orgId,
+      ownerId: _userId,
+      orgId: _customOrgId,
+      hasPassChange: false,
+      packageId: new ObjectId(packageId),
+      projectsId: [],
+      name: accountName,
+      expires: expiryDate,
+    });
+
+    return res.status(200).json({ 
+      user: newUser,
+      account: newAccount
+    });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }

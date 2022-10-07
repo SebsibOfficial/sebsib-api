@@ -22,5 +22,6 @@ router.get('/getinfobrief/:limit', accessControl(2), getInfoBriefController);
 router.get('/getallinfo/:collection', accessControl(2), getAllInfoController);
 router.get('/getaccountinfo/:id', accessControl(2), getAccountInfoController);
 router.get('/getadmins', accessControl(2), getAdminsController);
+router.post('/createaccount', accessControl(2), createAccountController);
 
 module.exports = router;
