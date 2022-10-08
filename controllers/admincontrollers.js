@@ -206,12 +206,12 @@ const createAccountController = async (req, res, next) => {
     }
 
     // for passwords, this is the password that is not hashed yet
-    const _unique6DigitVal = Math.floor(Math
-      .random() * (999999 - 100000 + 1)) + 100000;
+    const _unique8DigitVal = Math.floor(Math
+      .random() * (99999999 - 10000000 + 1)) + 10000000;
 
     // Encrypt password
     const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(_unique6DigitVal.toString(), salt);
+    const hash = bcrypt.hashSync(_unique8DigitVal.toString(), salt);
 
     const _userId = new ObjectId();
     const _orgId = new ObjectId();
@@ -248,7 +248,7 @@ const createAccountController = async (req, res, next) => {
       expires: expiryDate,
     });
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       user: newUser,
       account: newAccount
     });
@@ -258,9 +258,47 @@ const createAccountController = async (req, res, next) => {
 }
 
 const addAdminController = async (req, res, next) => {
-  try {
+  var { adminFirstName, adminLastName, adminEmail, password, roleId } = req.body;
 
+  // check for bad inputs
+  if (adminFirstName === undefined || adminLastName === undefined || adminEmail === undefined || password === undefined || roleId === undefined) return res.status(400).json({ message: 'Bad Input' });
+
+  // Check if email is valid
+  if (!validator.isEmail(adminEmail)) {
+    return res.status(400).json({ message: 'Invalid Email' });
+  }
+
+  // checck if password meets requirements
+  if (password.length < 8) return res.status(400).json({ message: 'Password too short' });
+
+  try {
+    // check if email exists
+    if (await User.exists({ email: adminEmail })) {
+      return res.status(400).json({ message: 'Email Exists' });
+    }
+
+    // Encrypt password
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+
+    var admin =  await User.create({
+      _id: new ObjectId(),
+      organizationId: new ObjectId('63412e98e855bf671f9533a7'),
+      projectId: [],
+      roleId: new ObjectId(roleId),
+      email: adminEmail,
+      phone: '',
+      firstName: adminFirstName,
+      lastName: adminLastName,
+      password: hash,
+      pic: '',
+    });
+
+    admin.password = '*';
+
+    return res.status(200).json(admin);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Server Error" });
   }
 }

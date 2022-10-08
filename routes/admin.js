@@ -23,5 +23,6 @@ router.get('/getallinfo/:collection', accessControl(2), getAllInfoController);
 router.get('/getaccountinfo/:id', accessControl(2), getAccountInfoController);
 router.get('/getadmins', accessControl(2), getAdminsController);
 router.post('/createaccount', accessControl(2), createAccountController);
+router.post('/addadmin', accessControl(1), addAdminController);
 
 module.exports = router;
