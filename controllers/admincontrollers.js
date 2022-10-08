@@ -281,7 +281,7 @@ const addAdminController = async (req, res, next) => {
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(password, salt);
 
-    var admin =  await User.create({
+    var admin = await User.create({
       _id: new ObjectId(),
       organizationId: new ObjectId('63412e98e855bf671f9533a7'),
       projectId: [],
@@ -305,8 +305,35 @@ const addAdminController = async (req, res, next) => {
 
 const decideRequestController = async (req, res, next) => {
   try {
+    var { requestId, descision } = req.body;
+
+    // check for bad inputs
+    if (requestId === undefined || descision === undefined) return res.status(400).json({ message: 'Bad Input' });
+    if (descision !== 'APPROVE' && descision !== 'DECLINE') return res.status(400).json({ message: 'Bad Input' });
+
+    // check if request exists
+    const request = await Request.findOne({ _id: new ObjectId(requestId) });
+    if (!request) return res.status(400).json({ message: 'Request does not exist' });
+
+    // check if request is already approved or declined
+    if (request.status !== 'PENDING') return res.status(400).json({ message: 'Request already approved or declined' });
+
+    // approve or decline request
+    if (descision === 'APPROVE') {
+      await Request.updateOne({ _id: new ObjectId(requestId) }, { $set: { status: 'APPROVED' } });
+      var approvedOrg = await Organization.findOne({ name: request.orgName });
+      return res.status(200).json(approvedOrg);
+    }
+
+    if (descision === 'DECLINE') {
+      await Request.updateOne({ _id: new ObjectId(requestId) }, { $set: { status: 'DECLINED' } });
+      return res.status(200).json({ message: 'Request Declined' });
+    }
+
+    return res.status(500).json({ message: "Something went wrong" });
 
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Server Error" });
   }
 }
