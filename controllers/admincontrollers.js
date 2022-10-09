@@ -349,8 +349,66 @@ const decideRequestController = async (req, res, next) => {
 }
 
 const editAccountController = async (req, res, next) => {
-  try {
+  const id = sanitizeAll(req.params.id);
+  var { accountName, ownerEmail, ownerFirstName, ownerLastName, ownerPhone, packageId, expiryDate } = req.body;
 
+  // sanitize all inputs
+  accountName = sanitizeAll(accountName); ownerEmail = sanitizeAll(ownerEmail); ownerFirstName = sanitizeAll(ownerFirstName); ownerLastName = sanitizeAll(ownerLastName); ownerPhone = sanitizeAll(ownerPhone); packageId = sanitizeAll(packageId); expiryDate = sanitizeAll(expiryDate);
+
+  try {
+    // get organization from id
+    const organization = await Organization.findOne({ _id: new ObjectId(id) });
+    if (!organization) return res.status(400).json({ message: 'Organization does not exist' });
+
+    // get owner of organization
+    const owner = await User.findOne({ _id: new ObjectId(organization.ownerId) });
+
+    // check if inputs are valid
+    // validate email
+    if (!validator.isEmail(ownerEmail)) return res.status(400).json({ message: 'Invalid Email' });
+
+    // check if inputs are not empty strings
+    accountName = accountName === '' ? organization.name : accountName;
+    ownerEmail = ownerEmail === '' ? owner.email : ownerEmail;
+    ownerFirstName = ownerFirstName === '' ? owner.firstName : ownerFirstName;
+    ownerLastName = ownerLastName === '' ? owner.lastName : ownerLastName;
+    ownerPhone = ownerPhone === '' ? owner.phone : ownerPhone;
+    packageId = packageId === '' ? organization.packageId : packageId;
+    expiryDate = expiryDate === '' ? organization.expires : expiryDate;
+
+    // update organization
+    await Organization.updateOne({
+      _id: new ObjectId(id)
+    }, {
+      $set: {
+        name: accountName,
+        packageId: new ObjectId(packageId),
+        expires: expiryDate
+      }
+    });
+
+    // update owner
+    await User.updateOne({
+      _id: new ObjectId(organization.ownerId)
+    }, {
+      $set: {
+        email: ownerEmail,
+        firstName: ownerFirstName,
+        lastName: ownerLastName,
+        phone: ownerPhone
+      }
+    });
+
+    // get updated organization
+    const updatedOrganization = await Organization.findOne({ _id: new ObjectId(id) });
+    // get updated owner
+    const updatedOwner = await User.findOne({ _id: new ObjectId(organization.ownerId) });
+    updatedOwner.password = '*';
+
+    return res.status(200).json({
+      organization: updatedOrganization,
+      owner: updatedOwner
+    });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }

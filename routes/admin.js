@@ -25,6 +25,7 @@ router.get('/getadmins', accessControl(2), getAdminsController);
 router.post('/createaccount', accessControl(2), createAccountController);
 router.post('/addadmin', accessControl(1), addAdminController);
 router.post('/deciderequest', accessControl(2), decideRequestController);
+router.patch('/editaccount/:id', accessControl(2), editAccountController);
 router.delete('/deleteaccount/:id', accessControl(1), deleteAccountController);
 router.delete('/deleteadmin/:id', accessControl(1), deleteAdminController);
 module.exports = router;
