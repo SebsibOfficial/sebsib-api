@@ -1,4 +1,4 @@
-const { InputType, Organization, Package, Project, Request, Response, Role, Survey, User } = require("../models");
+const { InputType, Organization, Package, Project, Request, Response, Role, Survey, User, Question } = require("../models");
 const bcrypt = require('bcrypt');
 const validator = require("validator");
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -347,7 +347,34 @@ const editAccountController = async (req, res, next) => {
 }
 
 const deleteAccountController = async (req, res, next) => {
+  const accountId = sanitizeAll(req.params.id);
+
   try {
+    // get organization along with its respective members, projects, surveys, questions and responses
+    const organization = await Organization.findOne({ _id: new ObjectId(accountId) });
+    if (!organization) return res.status(400).json({ message: 'Organization does not exist' });
+
+    const members = await User.find({ organizationId: new ObjectId(accountId) });
+    const projects = await Project.find({ _id: { $in: organization.projectsId } });
+    const surveys = await Survey.find({ _id: { $in: projects.map(project => project.surveysId) } });
+    const questions = await Question.find({ _id: { $in: surveys.map(survey => survey.questions) } });
+    const responses = await Response.find({ _id: { $in: surveys.map(survey => survey.responses) } });
+
+    // delete responses
+    await Response.deleteMany({ _id: { $in: responses.map(response => response._id) } });
+    // delete questions
+    await Question.deleteMany({ _id: { $in: questions.map(question => question._id) } });
+    // delete surveys
+    await Survey.deleteMany({ _id: { $in: surveys.map(survey => survey._id) } });
+    // delete projects
+    await Project.deleteMany({ _id: { $in: projects.map(project => project._id) } });
+    // delete members
+    await User.deleteMany({ _id: { $in: members.map(member => member._id) } });
+
+    // delete organization
+    await Organization.deleteOne({ _id: new ObjectId(accountId) });
+
+    return res.status(200).json({ message: 'Account Deleted' });
 
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
@@ -355,8 +382,21 @@ const deleteAccountController = async (req, res, next) => {
 }
 
 const deleteAdminController = async (req, res, next) => {
+  const adminId = sanitizeAll(req.params.id);
   try {
+    // get admin
+    const admin = await User.findOne({ _id: new ObjectId(adminId) });
 
+    // check if admin exists
+    if (!admin) return res.status(400).json({ message: 'Admin does not exist' });
+
+    // check if user is an admin
+    if (admin.roleId.toString() !== '623cc24a8b7ab06011bd1e61') return res.status(400).json({ message: 'User is not an admin' });
+
+    // delete admin
+    await User.deleteOne({ _id: new ObjectId(adminId) });
+
+    return res.status(200).json({ message: "Admin Deleted" });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }
