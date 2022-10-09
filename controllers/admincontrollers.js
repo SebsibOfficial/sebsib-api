@@ -81,9 +81,9 @@ const getRequestsController = async (req, res, next) => {
 }
 
 const getInfoBriefController = async (req, res, next) => {
-  try {
-    const limit = sanitizeAll(req.params.limit);
+  const limit = sanitizeAll(req.params.limit);
 
+  try {
     const accounts = await Organization.find().limit(limit);
     const requests = await Request.find().limit(limit);
     const users = await User.find().limit(limit);
@@ -133,9 +133,9 @@ const getAllInfoController = async (req, res, next) => {
 }
 
 const getAccountInfoController = async (req, res, next) => {
-  try {
-    let accountId = sanitizeAll(req.params.id);
+  let accountId = sanitizeAll(req.params.id);
 
+  try {
     const account = await Organization.aggregate([
       {
         "$match": {
@@ -179,6 +179,9 @@ const getAdminsController = async (req, res, next) => {
 
 const createAccountController = async (req, res, next) => {
   var { accountName, ownerEmail, ownerFirstName, ownerLastName, ownerPhone, packageId, expiryDate } = req.body;
+
+  // sanitize all inputs
+  accountName = sanitizeAll(accountName); ownerEmail = sanitizeAll(ownerEmail); ownerFirstName = sanitizeAll(ownerFirstName); ownerLastName = sanitizeAll(ownerLastName); ownerPhone = sanitizeAll(ownerPhone); packageId = sanitizeAll(packageId); expiryDate = sanitizeAll(expiryDate);
 
   // check for bad inputs
   if (accountName === undefined || ownerEmail === undefined || packageId === undefined || expiryDate === undefined) return res.status(400).json({ message: 'Bad Input' });
@@ -260,6 +263,9 @@ const createAccountController = async (req, res, next) => {
 const addAdminController = async (req, res, next) => {
   var { adminFirstName, adminLastName, adminEmail, password, roleId } = req.body;
 
+  // sanitize all inputs
+  adminFirstName = sanitizeAll(adminFirstName); adminLastName = sanitizeAll(adminLastName); adminEmail = sanitizeAll(adminEmail); password = sanitizeAll(password); roleId = sanitizeAll(roleId);
+
   // check for bad inputs
   if (adminFirstName === undefined || adminLastName === undefined || adminEmail === undefined || password === undefined || roleId === undefined) return res.status(400).json({ message: 'Bad Input' });
 
@@ -304,8 +310,12 @@ const addAdminController = async (req, res, next) => {
 }
 
 const decideRequestController = async (req, res, next) => {
+  var { requestId, descision } = req.body;
+
+  // sanitize all inputs
+  requestId = sanitizeAll(requestId); descision = sanitizeAll(descision);
+
   try {
-    var { requestId, descision } = req.body;
 
     // check for bad inputs
     if (requestId === undefined || descision === undefined) return res.status(400).json({ message: 'Bad Input' });
