@@ -13,7 +13,7 @@ const orgSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  hassPassChange: {
+  hasPassChange: {
     type: Boolean,
     required: true
   },
