@@ -13,10 +13,10 @@ const getMemberListController = async (req, res, next) => {
   if (orgId == null) return res.status(400).json({message: 'Bad Input'})
   try {
     const memberlist = await User.find({organizationId: orgId})
-    res.status(200).send(memberlist)
+    return res.status(200).send(memberlist)
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'})
+    return res.status(500).json({message: 'Server Error'})
   }
 }
 
@@ -67,10 +67,10 @@ const createMemberController = async (req, res, next) => {
       createdOn: new Date()
     }]);
     result[0].password = '*';
-    res.status(200).send(result);
+    return res.status(200).send(result);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'});
+    return res.status(500).json({message: 'Server Error'});
   }
   
 }
@@ -80,10 +80,10 @@ const getMemberController = async (req, res, next) => {
   try {
     var member = await User.findOne({_id: id});
     member.password = "*";
-    res.status(200).json(member);
+    return res.status(200).json(member);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'});
+    return res.status(500).json({message: 'Server Error'});
   }
 }
 
@@ -131,10 +131,10 @@ const editMemberController = async (req, res, next) => {
         password: hash,
       });
     }
-    res.status(200).send(result);
+    return res.status(200).send(result);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'});
+    return res.status(500).json({message: 'Server Error'});
   }
 }
 
@@ -148,10 +148,10 @@ const deleteMemberController = async (req, res, next) => {
     if (user.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
     // Remove from User collection
     const result = await User.findOneAndDelete({_id: id});
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'});
+    return res.status(500).json({message: 'Server Error'});
   }
 }
 
@@ -175,10 +175,10 @@ const addMemberController = async (req, res) => {
     }
     // Insert the project id in the member
     var ip = await User.updateMany({_id: {$in : memberIds}}, {$push: {projectsId: projectId}});
-    res.status(200).json({members: memberIds, project: projectId});
+    return res.status(200).json({members: memberIds, project: projectId});
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server Error"});
+    return res.status(500).json({message: "Server Error"});
   }
 }
 
@@ -196,10 +196,10 @@ const removeMemberController = async (req, res) => {
     if (!user.projectsId.includes(projectId)) return res.status(401).json({message: "User not in the project"});
     // Remove the project id in the member
     var rp = await User.findOneAndUpdate({_id: memberId}, {$pull: {projectsId: projectId}});
-    res.status(200).json({member: memberId, project: projectId});
+    return res.status(200).json({member: memberId, project: projectId});
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server Error"});
+    return res.status(500).json({message: "Server Error"});
   }
 }
 

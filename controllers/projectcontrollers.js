@@ -51,10 +51,10 @@ const getProjectListController = async (req, res) => {
     ]);
     Orgs = Orgs.filter(org => org._id == orgId);
     if (Orgs.length == 0) return res.status(403).json({message: 'Bad Input'});
-    res.status(200).send(Orgs[0].project_docs);
+    return res.status(200).send(Orgs[0].project_docs);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'});
+    return res.status(500).json({message: 'Server Error'});
   }
 }
  // ***MORE TESTING IS NEED ON THIS CONTROLLER***
@@ -93,10 +93,10 @@ const deleteProjectController = async (req, res, next) => {
     // Delete from Projects
     var dp = await Project.findByIdAndDelete(projectId);
 
-    res.status(200).json({projectId, surveyIDs, respIDs, questionIDs});
+    return res.status(200).json({projectId, surveyIDs, respIDs, questionIDs});
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server Error"});
+    return res.status(500).json({message: "Server Error"});
   }
 }
 
