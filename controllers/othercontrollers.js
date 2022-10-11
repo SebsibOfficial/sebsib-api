@@ -1,5 +1,93 @@
-const sendRequestController = async (req, res, next) => {
+const { Request, Organization } = require('../models');
+const enums = require('../utils/enums');
+const sanitizeAll = require('../utils/genSantizer');
+const translateIds = require('../utils/translateIds');
+const ObjectId = require('mongoose').Types.ObjectId;
 
+const sendRequestController = async (req, res, next) => {
+  var type = sanitizeAll(req.params.type);
+
+  try {
+    if (type == 'REGISTER') {
+      // Get body
+      var {pkg, firstname, lastname, email, phone, orgname, bank, transno} = req.body
+      var RGreqObj = {pkg, firstname, lastname, email, phone, orgname, bank, transno}
+      // Santize
+      for (var key in RGreqObj) {
+        RGreqObj[key] = sanitizeAll(RGreqObj[key])
+      }
+      // Check values
+      for (var key in RGreqObj) {
+        if ((RGreqObj[key] == null || RGreqObj[key] == "") && key != 'bank' && key != 'transno'){
+          return res.status(403).json({message:'Feilds missing'});
+        }
+      }
+      if (![enums.PACKAGES.FREE_TRAIL, enums.PACKAGES.STANDARD].includes(RGreqObj.pkg)) {
+        return res.status(403).json({message:'Package not found'});
+      }
+      // Check bank details
+      if (RGreqObj.pkg != enums.PACKAGES.FREE_TRAIL && (RGreqObj.bank == null || RGreqObj.transno == null )) 
+        return res.status(403).json({message:'Bank details missing'});
+      // Add to DB
+      var result = await Request.insertMany([{
+        _id: new ObjectId(),
+        firstName: RGreqObj.firstname,
+        lastName: RGreqObj.lastname,
+        phone: RGreqObj.phone,
+        orgName: RGreqObj.orgname,
+        email: RGreqObj.email,
+        type: "REGISTER",
+        packageId: translateIds('name', RGreqObj.pkg),
+        bank: RGreqObj.bank ?? '',
+        transactionNo: RGreqObj.transno ?? '',
+        requestDate: new Date(),
+      }])
+
+      return res.status(200).json(result[0])
+    }
+    else if (type == 'RENEWAL') {
+      // Get body
+      var {pkg, firstname, lastname, email, phone, orgname, bank, transno, orgId} = req.body
+      var RNreqObj = {pkg, firstname, lastname, email, phone, orgname, bank, transno, orgId}
+      // Santize
+      for (var key in RNreqObj) {
+        RNreqObj[key] = sanitizeAll(RNreqObj[key])
+      }
+      // Check values
+      for (var key in RNreqObj) {
+        if ((RNreqObj[key] == null || RNreqObj[key] == ""))
+          return res.status(403).json({message:'Feilds missing'});
+      }
+      // Check for packages
+      if (![enums.PACKAGES.STANDARD].includes(RNreqObj.pkg)) {
+        return res.status(403).json({message:'Package not found'});
+      }
+      // Check for orgId
+      var ren_org = await Organization.findOne({orgId: orgId});
+      if (ren_org == null)
+        return res.status(403).json({message:'Org not found'});
+      // Add to DB
+      var result = await Request.insertMany([{
+        _id: new ObjectId(),
+        firstName: RNreqObj.firstname,
+        lastName: RNreqObj.lastname,
+        phone: RNreqObj.phone,
+        orgName: RNreqObj.orgname,
+        email: RNreqObj.email,
+        type: "RENEWAL",
+        packageId: translateIds('name', RNreqObj.pkg),
+        bank: RNreqObj.bank,
+        transactionNo: RNreqObj.transno,
+        requestDate: new Date(),
+      }])
+
+      return res.status(200).json(result[0])
+    }
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({message: 'Server Error'})
+  }
+  
 }
 
 const getOrgStatusController = async (req, res, next) => {
