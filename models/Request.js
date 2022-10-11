@@ -29,17 +29,21 @@ const requestSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  packageId: {
+    type: mongoose.Types.ObjectId,
+    required: true
+  },
   status: {
     type: String,
-    required: true,
+    default: 'PENDING',
   },
   bank: {
     type: String,
-    required: true,
+    default: '',
   },
   transactionNo: {
     type: String,
-    required: true,
+    default: '',
   },
   requestDate: {
     type: Date,
@@ -47,7 +51,7 @@ const requestSchema = new mongoose.Schema({
   },
   responseDate: {
     type: Date,
-    required: true
+    required: false
   }
 })
 
