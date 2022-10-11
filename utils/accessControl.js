@@ -23,25 +23,25 @@ module.exports = accessControl = (level) => {
       case 1:
         await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) ? 
         next() : 
-        res.json({messsage: 'You don\'t have access'})
+        res.status(401).json({messsage: 'You don\'t have access'})
         break;
       case 2:
         await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) ? 
         next() : 
-        res.json({messsage: 'You don\'t have access'})
+        res.status(401).json({messsage: 'You don\'t have access'})
         break;
       case 3:
         await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) || await authorizeRoleFor(token, enums.ROLES.OWNER) ? 
         next() : 
-        res.json({messsage: 'You don\'t have access'})
+        res.status(401).json({messsage: 'You don\'t have access'})
         break;
       case 4:
         await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) || await authorizeRoleFor(token, enums.ROLES.OWNER) || authorizeRoleFor(token, enums.ROLES.MEMBER)? 
         next() : 
-        res.json({messsage: 'You don\'t have access'})
+        res.status(401).json({messsage: 'You don\'t have access'})
         break;
       default:
-        res.json({messsage: 'You don\'t have access'})
+        res.status(401).json({messsage: 'You don\'t have access'})
         break;
     }
   })
