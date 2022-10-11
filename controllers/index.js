@@ -41,7 +41,7 @@ module.exports = {
   sendRequestController,
   getOrgStatusController,
   changePasswordController,
-  resetPasswordController
+  resetPasswordController,
   getDashStatController,
   getAllAccountInfoController,
   getRequestsController,

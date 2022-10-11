@@ -54,7 +54,7 @@ router.post('/fillsettings', async (req, res) => {
         });
       } else return res.status(401).json({message: "Wrong credentials"})
     } catch (error) { console.log(error); return res.status(500).send("Server Error") }
-  } else {
+  } else 
     return res.status(400).json({message: "Bad Input"})
 })
 

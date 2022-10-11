@@ -12,6 +12,6 @@ router.get('/member/:id', accessControl(4) , getMemberController)
 router.get('/recentresponse/:orgId', accessControl(4) , getRecentResponseController)
 router.get('/survey/:id', accessControl(4) , getSurveyController)
 router.get('/responselist/:surveyId', getResponsesController);
-router.get('/getorgstatus/:shortorgId', getOrgStatusController);
+router.get('/orgstatus/:shortorgId', getOrgStatusController);
 
 module.exports = router;
