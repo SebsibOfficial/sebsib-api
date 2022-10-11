@@ -1,3 +1,4 @@
+const { json } = require('body-parser');
 const { Request, Organization } = require('../models');
 const enums = require('../utils/enums');
 const sanitizeAll = require('../utils/genSantizer');
@@ -91,7 +92,36 @@ const sendRequestController = async (req, res, next) => {
 }
 
 const getOrgStatusController = async (req, res, next) => {
+  var shortOrgId = sanitizeAll(req.params.shortorgId);
+  console.log(shortOrgId)
+  try {
+    const org = await Organization.aggregate([
+      {
+        "$match": {
+          "orgId": shortOrgId
+        }
+      },
+      {
+        "$lookup": {
+          "from": "users",
+          "localField": "ownerId",
+          "foreignField": "_id",
+          "as": "owner"
+        }
+      }
+    ])
 
+    if (org.length != 0) {
+      org[0].owner[0].password = '*'
+      return res.status(200).json(org)
+    }
+    else 
+      return res.status(403).json({message:'ORGID not found'})
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({message: 'Server Error'})
+  }
 }
 
 const changePasswordController = async (req, res, next) => {
