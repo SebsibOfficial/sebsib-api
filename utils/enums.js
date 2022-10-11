@@ -7,6 +7,7 @@ module.exports = {
   },
   PACKAGES:{
     FREE_TRAIL: "FREE TRAIL",
+    STANDARD: "STANDARD",
     UNLIMITED: "UNLIMITED"
   },
   CHECK:{
