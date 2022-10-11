@@ -33,7 +33,7 @@ const editSettingsController = async (req, res) => {
       });
       // Generate new token
       const token = jwt.sign({_id: user._id, role: user.roleId, org: orgId, org_name: name, email: email}, process.env.TOKEN_SECRET, {expiresIn: '1d'});
-      res.status(200).send({token: token, orgId: orgId});
+      return res.status(200).send({token: token, orgId: orgId});
     } else {
       // Check if last password is okay
       bcrypt.compare(Opassword, user.password, async function(err, result) {
@@ -52,13 +52,13 @@ const editSettingsController = async (req, res) => {
           });
           // Generate new token
           const token = jwt.sign({_id: user._id, role: user.roleId, org: orgId, org_name: name, email: email}, process.env.TOKEN_SECRET, {expiresIn: '1d'});
-          res.status(200).send({token: token, orgId: orgId});
-        } else res.status(401).json({message: "Wrong password"})
+          return res.status(200).send({token: token, orgId: orgId});
+        } else return res.status(401).json({message: "Wrong password"})
       })
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server Error"});
+    return res.status(500).json({message: "Server Error"});
   }
 }
 

@@ -19,16 +19,16 @@ router.post('/login', async (req, res) => {
             if (org != null && user.roleId == '623cc24a8b7ab06011bd1e60') {
               const token = jwt.sign({ _id: user._id, role: user.roleId, org: org._id, org_name: org.name, email: user.email }, process.env.TOKEN_SECRET, { expiresIn: '1d' });
               var package = await verifyPackage(token, '');
-              if (package == 'expired') res.status(401).json({ message: "Package has Expired!" })
+              if (package == 'expired') return res.status(401).json({message: "Package has Expired!"})
               user.password = "*";
-              res.status(200).json({ token: token, user: user, orgId: org });
-            } else res.status(401).json({ message: "Wrong credentials" })
-          } else res.status(401).json({ message: "Wrong credentials" })
+              return res.status(200).json({token: token, user: user, orgId: org});
+            } else return res.status(401).json({message: "Wrong credentials"})
+          } else return res.status(401).json({message: "Wrong credentials"})
         });
-      } else res.status(401).json({ message: "Wrong credentials" })
-    } catch (error) { console.log(error); res.status(500).send("Server Error") }
+      } else return res.status(401).json({message: "Wrong credentials"})
+    } catch (error) { console.log(error); return res.status(500).send("Server Error") }
   } else {
-    res.status(400).json({ message: "Bad Input" })
+    return res.status(400).json({message: "Bad Input"})
   }
 })
 
@@ -48,15 +48,14 @@ router.post('/fillsettings', async (req, res) => {
       if (user != null) {
         bcrypt.compare(password, user.password, function (err, result) {
           if (result) {
-            const token = jwt.sign({ _id: user._id, role: user.roleId, org: org_id, username: user.username }, process.env.TOKEN_SECRET);
-            res.status(200).json({ token: token });
-          } else res.status(401).json({ message: "Wrong credentials" })
+            const token = jwt.sign({_id: user._id, role: user.roleId, org: org_id, username: user.username}, process.env.TOKEN_SECRET);
+            return res.status(200).json({token: token});
+          } else return res.status(401).json({message: "Wrong credentials"})
         });
-      } else res.status(401).json({ message: "Wrong credentials" })
-    } catch (error) { console.log(error); res.status(500).send("Server Error") }
+      } else return res.status(401).json({message: "Wrong credentials"})
+    } catch (error) { console.log(error); return res.status(500).send("Server Error") }
   } else {
-    res.status(400).json({ message: "Bad Input" })
-  }
+    return res.status(400).json({message: "Bad Input"})
 })
 
 router.post('/adminlogin', async (req, res) => {
