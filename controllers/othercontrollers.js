@@ -1,9 +1,12 @@
 const { json } = require('body-parser');
-const { Request, Organization } = require('../models');
+const { Request, Organization, User } = require('../models');
 const enums = require('../utils/enums');
 const sanitizeAll = require('../utils/genSantizer');
 const translateIds = require('../utils/translateIds');
 const ObjectId = require('mongoose').Types.ObjectId;
+const getToken = require('../utils/getToken');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const sendRequestController = async (req, res, next) => {
   var type = sanitizeAll(req.params.type);
@@ -125,7 +128,46 @@ const getOrgStatusController = async (req, res, next) => {
 }
 
 const changePasswordController = async (req, res, next) => {
-
+  // Get body
+  var {initialpass, newpass, confirmpass} = req.body;
+  initialpass = sanitizeAll(initialpass); newpass = sanitizeAll(newpass); confirmpass = sanitizeAll(confirmpass);
+  // Check input
+  if (initialpass == null || newpass == null || confirmpass == null) return res.status(403).json({message: "Feilds missing"})
+  try {
+    // Get Token
+    var userId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET)._id;
+    var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
+    // Get user details
+    const user = await User.findOne({ _id: userId });
+    if (user != null && user.roleId == '623cc24a8b7ab06011bd1e60') {
+      // Check old pass
+      bcrypt.compare(initialpass, user.password, async function (err, result) {
+        if (result) {
+          // Check password confirmation
+          if (newpass === confirmpass) {
+            // Encrypt password
+            const salt = bcrypt.genSaltSync(10);
+            const hash = bcrypt.hashSync(newpass, salt);
+            // Update Owner Password
+            await User.findOneAndUpdate({_id: userId}, {
+              password: hash,
+            })
+            // Update Org haspasschanged
+            await Organization.findOneAndUpdate({ _id: orgId}, {
+              hasPassChange: true
+            })
+            return res.status(200).json({message: 'Completed'})
+          }
+          else return res.status(403).json({message: "Input Mismatch"})
+        }
+        else return res.status(401).json({message: "Wrong Credentials"})
+      })
+    }
+    else return res.status(401).json({message: "Wrong Credentials"})  
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({message: 'Server Error'})
+  }
 }
 
 const resetPasswordController = async (req, res, next) => {
