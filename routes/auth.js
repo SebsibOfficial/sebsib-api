@@ -34,10 +34,10 @@ router.post('/login', async (req, res) => {
 
 
 router.post('/fillsettings', async (req, res) => {
-  var { email, password, org } = req.body;
-  email = sanitizeAll(email); password = sanitizeAll(password); org = sanitizeAll(org);
+  var { email, password, shortOrgId } = req.body;
+  email = sanitizeAll(email); password = sanitizeAll(password); shortOrgId = sanitizeAll(shortOrgId);
   try {
-    var org_obj = await Organization.findOne({ name: org });
+    var org_obj = await Organization.findOne({ orgId: shortOrgId });
     var org_id = org_obj._id;
   } catch (error) {
     return res.status(401).json({ message: "Wrong credentials" });
@@ -45,10 +45,10 @@ router.post('/fillsettings', async (req, res) => {
   if (email != undefined && password != undefined && validator.isEmail(email)) {
     try {
       const user = await User.findOne({ email: email, organizationid: org_id });
-      if (user != null) {
+      if (user != null && user.roleId == '623cc24a8b7ab06011bd1e5f') {
         bcrypt.compare(password, user.password, function (err, result) {
           if (result) {
-            const token = jwt.sign({_id: user._id, role: user.roleId, org: org_id, username: user.username}, process.env.TOKEN_SECRET);
+            const token = jwt.sign({_id: user._id, role: user.roleId, org: org_id, email: user.email}, process.env.TOKEN_SECRET);
             return res.status(200).json({token: token});
           } else return res.status(401).json({message: "Wrong credentials"})
         });
