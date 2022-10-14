@@ -4,8 +4,7 @@ const {
   editMemberController, 
   addMemberController, 
   removeMemberController, 
-  changePasswordController,
-  resetPasswordController
+  changePasswordController
 } = require('../controllers');
 
 router.patch('/editsettings/:orgId', editSettingsController);
@@ -13,6 +12,5 @@ router.patch('/editmember/:id', editMemberController)
 router.patch('/addmembers/:pid', addMemberController);
 router.patch('/removemember/:pid/:id', removeMemberController);
 router.patch('/changepass', changePasswordController);
-router.patch('/resetpass', resetPasswordController);
 
 module.exports = router;
