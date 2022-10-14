@@ -27,11 +27,11 @@ const sendRequestController = async (req, res, next) => {
           return res.status(403).json({message:'Feilds missing'});
         }
       }
-      if (![enums.PACKAGES.FREE_TRAIL, enums.PACKAGES.STANDARD].includes(RGreqObj.pkg)) {
+      if (![enums.PACKAGES.FREE_TRIAL, enums.PACKAGES.STANDARD].includes(RGreqObj.pkg)) {
         return res.status(403).json({message:'Package not found'});
       }
       // Check bank details
-      if (RGreqObj.pkg != enums.PACKAGES.FREE_TRAIL && (RGreqObj.bank == null || RGreqObj.transno == null )) 
+      if (RGreqObj.pkg != enums.PACKAGES.FREE_TRIAL && (RGreqObj.bank == null || RGreqObj.transno == null )) 
         return res.status(403).json({message:'Bank details missing'});
       // Add to DB
       var result = await Request.insertMany([{

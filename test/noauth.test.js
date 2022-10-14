@@ -16,7 +16,7 @@ describe('/noauth/sendrequest', function () {
     chai.request(server)
     .post('/noauth/sendrequest/REGISTER')
     .send({
-      "pkg": "FREE TRAIL",
+      "pkg": "FREE TRIAL",
       "firstname": "firsttest",
       "lastname": "lasttest",
       "email": "testemail",

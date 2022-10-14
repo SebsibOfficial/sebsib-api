@@ -6,7 +6,7 @@ module.exports = {
     OWNER: "OWNER"
   },
   PACKAGES:{
-    FREE_TRAIL: "FREE TRAIL",
+    FREE_TRIAL: "FREE TRIAL",
     STANDARD: "STANDARD",
     UNLIMITED: "UNLIMITED"
   },
