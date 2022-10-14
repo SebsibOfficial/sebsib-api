@@ -97,7 +97,6 @@ const sendRequestController = async (req, res, next) => {
 
 const getOrgStatusController = async (req, res, next) => {
   var shortOrgId = sanitizeAll(req.params.shortorgId);
-  console.log(shortOrgId)
   try {
     const org = await Organization.aggregate([
       {
@@ -117,7 +116,7 @@ const getOrgStatusController = async (req, res, next) => {
 
     if (org.length != 0) {
       org[0].owner[0].password = '*'
-      return res.status(200).json(org)
+      return res.status(200).json(org[0])
     }
     else 
       return res.status(403).json({message:'ORGID not found'})
