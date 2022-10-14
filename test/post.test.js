@@ -132,58 +132,6 @@ describe('/post/createmember', function () {
     })
 })
 
-describe('/noauth/sendrequest', function () {
-  // Connect to DB before doing tests
-  before('connect', function(){
-    return mongoose.connect('mongodb://localhost/sebsib')
-  })
-
-  it('Sends proper register request', (done) => {
-    chai.request(server)
-    .post('/noauth/sendrequest/REGISTER')
-    .send({
-      "pkg": "FREE TRAIL",
-      "firstname": "firsttest",
-      "lastname": "lasttest",
-      "email": "testemail",
-      "phone": "0912345678",
-      "orgname": "testorgan"
-    })
-    .end((err, res) => {
-      res.should.have.status(200)
-      done()
-    })
-  })
-
-  // Send renew request properly to Database
-  it('Send proper renew request', () => {
-    chai.request(server)
-    .post('/noauth/sendrequest/RENEW')
-    .send({
-      "pkg": "STANDARD",
-      "firstname": "firsttest",
-      "lastname": "lasttest",
-      "email": "testemail",
-      "phone": "0912345678",
-      "orgname": "testorgan",
-      "bank": "DASHEN",
-      "transno": "987IUYJHG3WEDT",
-      "orgId": "FRORSA65"
-    })
-    .end((err, res) => {
-      res.should.have.status(200)
-      done()
-    })
-  })
-
-  it('Tear Down', () => {
-    this.timeout(0);
-    Request.deleteMany({email: 'testemail'}).catch((err) => {
-      console.log(err)
-    })
-  })
-})
-
 describe('/post/createsurvey', () => {
     it('Responds', (done) => {
         chai.request(server)
