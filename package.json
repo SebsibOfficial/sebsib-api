@@ -9,7 +9,7 @@
     "start:win:dev": "set NODE_ENV=dev&& nodemon index.js",
     "start:win:dev:test": "set NODE_ENV=test&& nodemon index.js",
     "start:linux:dev:test": "NODE_ENV=test nodemon index.js",
-    "test": "mocha -r dotenv/config"
+    "test": "mocha -r dotenv/config --sort"
   },
   "repository": {
     "type": "git",

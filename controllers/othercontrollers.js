@@ -97,7 +97,6 @@ const sendRequestController = async (req, res, next) => {
 
 const getOrgStatusController = async (req, res, next) => {
   var shortOrgId = sanitizeAll(req.params.shortorgId);
-  console.log(shortOrgId)
   try {
     const org = await Organization.aggregate([
       {
@@ -117,7 +116,7 @@ const getOrgStatusController = async (req, res, next) => {
 
     if (org.length != 0) {
       org[0].owner[0].password = '*'
-      return res.status(200).json(org)
+      return res.status(200).json(org[0])
     }
     else 
       return res.status(403).json({message:'ORGID not found'})
@@ -193,13 +192,8 @@ const resetPasswordController = async (req, res, next) => {
         user_id: process.env.USER_ID,
         template_params: {to_name: user.firstName, request_date: new Date().toDateString().slice(0,19), password: _unique8DigitVal, to_email: user.email},
       };
-      var resp = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
 
-      if (resp.status == 200) {
+      if (process.env.NODE_ENV == 'test'){
         // Set password
           // Encrypt password
           const salt = bcrypt.genSaltSync(10);
@@ -213,9 +207,32 @@ const resetPasswordController = async (req, res, next) => {
           hasPassChange: false
         })
         return res.status(200).json({message: 'Completed'})
+      } else {
+        // If .env is DEV or PROD
+        var resp = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        });
+
+        if (resp.status == 200) {
+          // Set password
+            // Encrypt password
+            const salt = bcrypt.genSaltSync(10);
+            const hash = bcrypt.hashSync(_unique8DigitVal.toString(), salt);
+            // Update Owner Password
+            await User.findOneAndUpdate({_id: user._id}, {
+              password: hash,
+            })
+          // Set haspasschange to false
+          await Organization.findOneAndUpdate({orgId: shortOrgId}, {
+            hasPassChange: false
+          })
+          return res.status(200).json({message: 'Completed'})
+        }
+        else {
+          return res.status(500).json({message: resp.body})}
       }
-      else {
-        return res.status(500).json({message: resp.body})}
     }
     else return res.status(401).json({message: 'Wrong Credentials'})
   }

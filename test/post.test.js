@@ -2,11 +2,17 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let should = chai.should();
 const server = "http://localhost:3000";
-const {User} = require('../models');
+const ObjectId = require('mongoose').Types.ObjectId;
+const mongoose = require('mongoose');
+const {User, Request} = require('../models');
 chai.use(chaiHttp);
 
 describe('/post/createmember', function () {
     let token = '';
+    // Connect to DB before doing tests
+    before('connect', function(){
+      return mongoose.connect('mongodb://localhost/sebsib')
+    })
     // This executes before every test
     this.beforeEach('Giving Token for Tests', (done) => {
         chai.request(server)
@@ -118,9 +124,11 @@ describe('/post/createmember', function () {
         })
     })
 
-    after((done) => {
-        User.findOneAndDelete({'email':'newmember@to.add'})
-        done()
+    it('Tear Down', async () => {
+      this.timeout(0)
+      User.findOneAndDelete({email:'newmember@to.add'}).catch((err) => {
+        console.log(err)
+      })
     })
 })
 

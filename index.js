@@ -1,6 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const {postRoutes, getRoutes, patchRoutes, authRoutes, adminRoutes, deleteRoutes} = require('./routes');
+const {postRoutes, getRoutes, patchRoutes, authRoutes, adminRoutes, deleteRoutes, noAuthRoutes} = require('./routes');
 const bodyParser = require('body-parser');
 const authorizeKey = require('./utils/authorizeKey');
 const authorizeToken = require('./utils/authorizeToken');
@@ -45,5 +45,6 @@ app.use('/get', authorizeToken, getRoutes);
 app.use('/post', authorizeToken, postRoutes);
 app.use('/delete', authorizeToken, deleteRoutes);
 app.use('/patch', authorizeToken, patchRoutes);
+app.use('/noauth', noAuthRoutes);
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
