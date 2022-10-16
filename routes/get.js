@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { getMemberController, getMemberListController, 
   getSurveyListController, getProjectListController, 
   getRecentResponseController, getSurveyController,
-  getResponsesController, getOrgStatusController } = require('../controllers');
+  getResponsesController } = require('../controllers');
 const accessControl = require('../utils/accessControl');
 
 router.get('/memberlist/:orgId', accessControl(4) ,getMemberListController);
@@ -12,6 +12,5 @@ router.get('/member/:id', accessControl(4) , getMemberController)
 router.get('/recentresponse/:orgId', accessControl(4) , getRecentResponseController)
 router.get('/survey/:id', accessControl(4) , getSurveyController)
 router.get('/responselist/:surveyId', getResponsesController);
-router.get('/orgstatus/:shortorgId', getOrgStatusController);
 
 module.exports = router;
