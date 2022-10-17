@@ -45,6 +45,10 @@ const requestSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  subType: {
+    type: String,
+    default: ''
+  },
   requestDate: {
     type: Date,
     required: true

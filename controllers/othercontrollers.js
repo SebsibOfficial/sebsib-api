@@ -15,15 +15,15 @@ const sendRequestController = async (req, res, next) => {
   try {
     if (type == 'REGISTER') {
       // Get body
-      var {pkg, firstname, lastname, email, phone, orgname, bank, transno} = req.body
-      var RGreqObj = {pkg, firstname, lastname, email, phone, orgname, bank, transno}
+      var {pkg, firstname, lastname, email, phone, orgname, bank, transno, subType} = req.body
+      var RGreqObj = {pkg, firstname, lastname, email, phone, orgname, bank, transno, subType}
       // Santize
       for (var key in RGreqObj) {
         RGreqObj[key] = sanitizeAll(RGreqObj[key])
       }
       // Check values
       for (var key in RGreqObj) {
-        if ((RGreqObj[key] == null || RGreqObj[key] == "") && key != 'bank' && key != 'transno'){
+        if ((RGreqObj[key] == null || RGreqObj[key] == "") && key != 'bank' && key != 'transno' && key != 'subType'){
           return res.status(403).json({message:'Feilds missing'});
         }
       }
@@ -43,6 +43,7 @@ const sendRequestController = async (req, res, next) => {
         email: RGreqObj.email,
         type: "REGISTER",
         packageId: translateIds('name', RGreqObj.pkg),
+        subType: RGreqObj.subType ?? '',
         bank: RGreqObj.bank ?? '',
         transactionNo: RGreqObj.transno ?? '',
         requestDate: new Date(),
@@ -52,8 +53,8 @@ const sendRequestController = async (req, res, next) => {
     }
     else if (type == 'RENEWAL') {
       // Get body
-      var {pkg, firstname, lastname, email, phone, orgname, bank, transno, orgId} = req.body
-      var RNreqObj = {pkg, firstname, lastname, email, phone, orgname, bank, transno, orgId}
+      var {pkg, firstname, lastname, email, phone, orgname, bank, transno, orgId, subType} = req.body
+      var RNreqObj = {pkg, firstname, lastname, email, phone, orgname, bank, transno, orgId, subType}
       // Santize
       for (var key in RNreqObj) {
         RNreqObj[key] = sanitizeAll(RNreqObj[key])
@@ -81,6 +82,7 @@ const sendRequestController = async (req, res, next) => {
         email: RNreqObj.email,
         type: "RENEWAL",
         packageId: translateIds('name', RNreqObj.pkg),
+        subType: subType,
         bank: RNreqObj.bank,
         transactionNo: RNreqObj.transno,
         requestDate: new Date(),
