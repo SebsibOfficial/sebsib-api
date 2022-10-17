@@ -132,7 +132,6 @@ const getOrgStatusController = async (req, res, next) => {
 const changePasswordController = async (req, res, next) => {
   // Get body
   var {initialpass, newpass, confirmpass} = req.body;
-  initialpass = sanitizeAll(initialpass); newpass = sanitizeAll(newpass); confirmpass = sanitizeAll(confirmpass);
   // Check input
   if (newpass == null || confirmpass == null) return res.status(403).json({message: "Feilds missing"})
   try {

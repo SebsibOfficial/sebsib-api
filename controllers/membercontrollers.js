@@ -30,7 +30,7 @@ const createMemberController = async (req, res, next) => {
   lastname = lastname ?? '';
   // Check password length
   if (password.length < 8) return res.status(400).json({message: 'Password too short'});
-  email = sanitizeAll(email); password = sanitizeAll(password);phone = sanitizeAll(phone);
+  email = sanitizeAll(email);phone = sanitizeAll(phone);
   firstname = sanitizeAll(firstname); lastname = sanitizeAll(lastname); projectsId = sanitizeAll(projectsId);
 
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
@@ -88,9 +88,9 @@ const getMemberController = async (req, res, next) => {
 }
 
 const editMemberController = async (req, res, next) => {
-  var {email, password, username, projectsId} = req.body;
+  var {email, password, phone, firstname, lastname, projectsId} = req.body;
   var userId = sanitizeAll(req.params.id);
-  email = sanitizeAll(email); password = sanitizeAll(password);username = sanitizeAll(username); projectsId = sanitizeAll(projectsId);
+  email = sanitizeAll(email); firstname = sanitizeAll(firstname); lastname = sanitizeAll(lastname); phone = sanitizeAll(phone); projectsId = sanitizeAll(projectsId);
   
   try {
     // Check if string is an email
@@ -98,7 +98,7 @@ const editMemberController = async (req, res, next) => {
       return res.status(400).json({message: 'Invalid Email'});
     }
     // Check if username exists
-    if (await User.exists({username: username, _id: { $ne: userId}}) || await User.exists({email: email, _id: {$ne: userId}})) {
+    if (await User.exists({email: email, _id: {$ne: userId}})) {
       return res.status(400).json({message: 'Username or Email Exists'});
     }
     const user = await User.findOne({_id: userId});
@@ -121,13 +121,17 @@ const editMemberController = async (req, res, next) => {
       var result = await User.updateOne({_id: userId},{
         projectsId: projectsId,
         email: email,
-        username: username,
+        firstName: firstname,
+        lastName: lastname,
+        phone: phone
       });
     } else {
       var result = await User.updateOne({_id: userId},{
         projectsId: projectsId,
         email: email,
-        username: username,
+        firstName: firstname,
+        lastName: lastname,
+        phone: phone,
         password: hash,
       });
     }

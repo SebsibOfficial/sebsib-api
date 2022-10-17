@@ -9,7 +9,7 @@ const editSettingsController = async (req, res) => {
   var orgId = sanitizeAll(req.params.orgId);
   var userID = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET)._id;
   var {name, email, Opassword, Npassword} = req.body;
-  email = sanitizeAll(email); name = sanitizeAll(name);Opassword = sanitizeAll(Opassword); Npassword = sanitizeAll(Npassword);
+  email = sanitizeAll(email); name = sanitizeAll(name);
   try {
     var user = await User.findById(userID);
 
