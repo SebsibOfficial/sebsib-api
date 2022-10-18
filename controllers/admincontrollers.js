@@ -153,6 +153,14 @@ const getAccountInfoController = async (req, res, next) => {
       {
         "$lookup": {
           "from": "users",
+          "localField": "ownerId",
+          "foreignField": "_id",
+          "as": "owner"
+        }
+      },
+      {
+        "$lookup": {
+          "from": "users",
           "localField": "_id",
           "foreignField": "organizationId",
           "as": "members"
@@ -161,7 +169,7 @@ const getAccountInfoController = async (req, res, next) => {
     ]);
 
 
-    return res.status(200).json(account);
+    return res.status(200).json(account[0]);
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }
@@ -383,7 +391,7 @@ const editAccountController = async (req, res, next) => {
       $set: {
         name: accountName,
         packageId: new ObjectId(packageId),
-        expires: expiryDate
+        expires: new Date(expiryDate)
       }
     });
 
@@ -410,6 +418,7 @@ const editAccountController = async (req, res, next) => {
       owner: updatedOwner
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ message: "Server Error" });
   }
 }
