@@ -47,4 +47,4 @@ app.use('/delete', authorizeToken, deleteRoutes);
 app.use('/patch', authorizeToken, patchRoutes);
 app.use('/noauth', noAuthRoutes);
 app.use('/auth', authRoutes);
-app.use('/admin', adminRoutes);
+app.use('/admin', authorizeToken, adminRoutes);
