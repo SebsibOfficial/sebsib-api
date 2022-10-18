@@ -43,29 +43,70 @@ const getDashStatController = async (req, res, next) => {
 
 const getAllAccountInfoController = async (req, res, next) => {
   try {
-
     // get basic infos from all organizations
     const accounts = await Organization.aggregate([
+      {
+        "$lookup": {
+          "from": "users",
+          "localField": "ownerId",
+          "foreignField": "_id",
+          "as": "owner"
+        }
+      },
+      { $unwind: "$projectsId" },
       {
         "$lookup": {
           "from": "projects",
           "localField": "projectsId",
           "foreignField": "_id",
-          "as": "projects"
+          "as": "projects",
+          "pipeline": [
+            {
+              "$lookup": {
+                "from": "surveys",
+                "localField": "surveysId",
+                "foreignField": "_id",
+                "as": "surveys",
+                "pipeline": [
+                  { $unwind: "$questions" },
+                  { $unwind: "$responses" },
+                  {
+                    "$lookup": {
+                      "from": "questions",
+                      "localField": "questions",
+                      "foreignField": "_id",
+                      "as": "questions",
+                    },
+                  },
+                  {
+                    "$lookup": {
+                      "from": "responses",
+                      "localField": "responses",
+                      "foreignField": "_id",
+                      "as": "responses",
+                    },
+                  },
+                ],
+              },
+            },
+            { $unset: "surveysId" },
+            {
+              "$lookup": {
+                "from": "users",
+                "localField": "_id",
+                "foreignField": "projectsId",
+                "as": "members",
+              },
+            },
+          ],
         }
       },
-      {
-        "$lookup": {
-          "from": "users",
-          "localField": "_id",
-          "foreignField": "organizationId",
-          "as": "members"
-        }
-      },
+      { $unset: ["projectsId", "ownerId"] },
     ]);
 
     return res.status(200).json(accounts);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Server Error" });
   }
 }
