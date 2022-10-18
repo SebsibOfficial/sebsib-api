@@ -17,6 +17,7 @@ module.exports = {
   },
   PLATFORMS:[
     "SEBSIB_OFFICE_1",
-    "SEBSIB_COLLECT_2"
+    "SEBSIB_COLLECT_2",
+    "SEBSIB_ADMIN_3"
   ]
 }
