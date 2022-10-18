@@ -248,7 +248,7 @@ const createAccountController = async (req, res, next) => {
       packageId: new ObjectId(packageId),
       projectsId: [],
       name: accountName,
-      expires: expiryDate,
+      expires: new Date(expiryDate),
     });
 
     return res.status(200).json({
