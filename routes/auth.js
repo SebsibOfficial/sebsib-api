@@ -60,7 +60,7 @@ router.post('/fillsettings', async (req, res) => {
 
 router.post('/adminlogin', async (req, res) => {
   var { email, password } = req.body;
-  email = sanitizeAll(email); password = sanitizeAll(password);
+  email = sanitizeAll(email);
   if (email != undefined && password != undefined && validator.isEmail(email)) {
     try {
       const user = await User.findOne({ email: email });
