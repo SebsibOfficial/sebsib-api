@@ -118,15 +118,15 @@ const getInfoBriefController = async (req, res, next) => {
 
 
     return res.status(200).json({
-      "accounts": accounts,
-      "requests ": requests,
-      "users": users,
-      "projects ": projects,
-      "surveys": surveys,
-      "responses": responses,
-      "inputTypes ": inputTypes,
-      "packages ": packages,
-      "roles ": roles,
+      accounts: accounts,
+      requests : requests,
+      users: users,
+      projects : projects,
+      surveys: surveys,
+      responses: responses,
+      inputTypes : inputTypes,
+      packages : packages,
+      roles : roles,
     });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
