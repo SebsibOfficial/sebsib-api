@@ -67,26 +67,7 @@ const getAllAccountInfoController = async (req, res, next) => {
                 "localField": "surveysId",
                 "foreignField": "_id",
                 "as": "surveys",
-                "pipeline": [
-                  { $unwind: "$questions" },
-                  { $unwind: "$responses" },
-                  {
-                    "$lookup": {
-                      "from": "questions",
-                      "localField": "questions",
-                      "foreignField": "_id",
-                      "as": "questions",
-                    },
-                  },
-                  {
-                    "$lookup": {
-                      "from": "responses",
-                      "localField": "responses",
-                      "foreignField": "_id",
-                      "as": "responses",
-                    },
-                  },
-                ],
+                
               },
             },
             { $unset: "surveysId" },
