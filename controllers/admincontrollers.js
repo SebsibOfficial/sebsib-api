@@ -53,7 +53,6 @@ const getAllAccountInfoController = async (req, res, next) => {
           "as": "owner"
         }
       },
-      { $unwind: "$projectsId" },
       {
         "$lookup": {
           "from": "projects",
