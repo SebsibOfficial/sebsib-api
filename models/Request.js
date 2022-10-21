@@ -21,6 +21,10 @@ const requestSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  orgId: {
+    type: String,
+    default: '',
+  },
   email: {
     type: String,
     required: true,

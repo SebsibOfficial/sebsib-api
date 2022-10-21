@@ -53,8 +53,8 @@ const sendRequestController = async (req, res, next) => {
     }
     else if (type == 'RENEWAL') {
       // Get body
-      var {pkg, firstname, lastname, email, phone, orgname, bank, transno, orgId, subType} = req.body
-      var RNreqObj = {pkg, firstname, lastname, email, phone, orgname, bank, transno, orgId, subType}
+      var {pkg, firstname, lastname, email, phone, orgname, bank, transno, longOrgId, orgId, subType} = req.body
+      var RNreqObj = {pkg, firstname, lastname, email, phone, orgname, bank, transno, longOrgId, orgId, subType}
       // Santize
       for (var key in RNreqObj) {
         RNreqObj[key] = sanitizeAll(RNreqObj[key])
@@ -79,6 +79,7 @@ const sendRequestController = async (req, res, next) => {
         lastName: RNreqObj.lastname,
         phone: RNreqObj.phone,
         orgName: RNreqObj.orgname,
+        orgId: RNreqObj.longOrgId,
         email: RNreqObj.email,
         type: "RENEWAL",
         packageId: translateIds('name', RNreqObj.pkg),
