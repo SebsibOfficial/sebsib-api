@@ -63,6 +63,7 @@ const createSurveyController = async (req, res) => {
           answerId: question.showPattern.ansIs
         } : null,
         options: question.choices,
+        mandatory: question.mandatory,
         questionText: question.question,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
         createdOn: new Date()
