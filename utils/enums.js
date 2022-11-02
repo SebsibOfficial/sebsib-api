@@ -3,7 +3,8 @@ module.exports = {
     ADMIN: "ADMIN",
     MEMBER: "MEMBER",
     SUPER_ADMIN: "SUPER_ADMIN",
-    OWNER: "OWNER"
+    OWNER: "OWNER",
+    ANALYST: "ANALYST"
   },
   PACKAGES:{
     FREE_TRIAL: "FREE TRIAL",

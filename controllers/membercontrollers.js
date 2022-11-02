@@ -6,6 +6,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const mongodb = require('mongodb');
 const getToken = require('../utils/getToken')
 const sanitizeAll = require('../utils/genSantizer');
+const translateIds = require("../utils/translateIds");
 
 const getMemberListController = async (req, res, next) => {
   var orgId = req.params.orgId;
@@ -21,9 +22,9 @@ const getMemberListController = async (req, res, next) => {
 }
 
 const createMemberController = async (req, res, next) => {
-  var {email, password, phone, firstname, lastname, projectsId} = req.body;
+  var {email, password, phone, role, firstname, lastname, projectsId} = req.body;
   // Required fields must not be undefined
-  if (email === undefined || password === undefined || projectsId === undefined) return res.status(400).json({message: 'Bad Input'});
+  if (email === undefined || password === undefined || projectsId === undefined || role === undefined) return res.status(400).json({message: 'Bad Input'});
   // Remove undefined types
   phone = phone ?? '';
   firstname = firstname ?? '';
@@ -57,7 +58,7 @@ const createMemberController = async (req, res, next) => {
       _id: new ObjectId(),
       organizationId: orgId,
       projectsId: projectsId,
-      roleId: new ObjectId('623cc24a8b7ab06011bd1e5f'),
+      roleId: new ObjectId(translateIds('text', role)),
       email: email,
       phone: phone,
       firstName: firstname,
