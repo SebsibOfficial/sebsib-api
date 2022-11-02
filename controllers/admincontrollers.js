@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const validator = require("validator");
 const ObjectId = require('mongoose').Types.ObjectId;
 const sanitizeAll = require('../utils/genSantizer');
+const translateIds = require('../utils/translateIds')
+const fetch = require('node-fetch');
 
 const getDashStatController = async (req, res, next) => {
   try {
@@ -283,12 +285,28 @@ const createAccountController = async (req, res, next) => {
       name: accountName,
       expires: new Date(expiryDate),
     });
-
+    
+    // send account creation confirmation
+    var data = {
+      service_id: process.env.SERVICE_ID,
+      template_id: "template_jy47etj",
+      user_id: process.env.USER_ID,
+      template_params: {firstName: ownerFirstName, emailTo: ownerEmail, password: _unique8DigitVal.toString(), packageName: translateIds('id', packageId).toLowerCase().charAt(0).toUpperCase},
+    };
+    // If .env is DEV or PROD
+    if (process.env.NODE_ENV != 'test') {
+      var resp = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+    }
     return res.status(200).json({
       user: newUser,
       account: newAccount
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ message: "Server Error" });
   }
 }
