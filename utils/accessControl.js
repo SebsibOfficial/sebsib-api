@@ -23,25 +23,30 @@ module.exports = accessControl = (level) => {
       case 1:
         await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) ? 
         next() : 
-        res.status(401).json({messsage: 'You don\'t have access'})
+        res.status(401).json({message: 'You don\'t have access'})
         break;
       case 2:
         await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) ? 
         next() : 
-        res.status(401).json({messsage: 'You don\'t have access'})
+        res.status(401).json({message: 'You don\'t have access'})
         break;
       case 3:
         await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) || await authorizeRoleFor(token, enums.ROLES.OWNER) ? 
         next() : 
-        res.status(401).json({messsage: 'You don\'t have access'})
+        res.status(401).json({message: 'You don\'t have access'})
         break;
       case 4:
-        await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) || await authorizeRoleFor(token, enums.ROLES.OWNER) || authorizeRoleFor(token, enums.ROLES.MEMBER)? 
+        await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) || await authorizeRoleFor(token, enums.ROLES.OWNER) || await authorizeRoleFor(token, enums.ROLES.ANALYST)? 
         next() : 
-        res.status(401).json({messsage: 'You don\'t have access'})
+        res.status(401).json({message: 'You don\'t have access'})
+        break;  
+      case 5:
+        await authorizeRoleFor(token, enums.ROLES.SUPER_ADMIN) || await authorizeRoleFor(token, enums.ROLES.ADMIN) || await authorizeRoleFor(token, enums.ROLES.OWNER) || await authorizeRoleFor(token, enums.ROLES.ANALYST) || authorizeRoleFor(token, enums.ROLES.MEMBER)? 
+        next() : 
+        res.status(401).json({message: 'You don\'t have access'})
         break;
       default:
-        res.status(401).json({messsage: 'You don\'t have access'})
+        res.status(401).json({message: 'You don\'t have access'})
         break;
     }
   })
