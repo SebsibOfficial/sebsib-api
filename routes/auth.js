@@ -45,7 +45,7 @@ router.post('/fillsettings', async (req, res) => {
   if (email != undefined && password != undefined && validator.isEmail(email)) {
     try {
       const user = await User.findOne({ email: email, organizationid: org_id });
-      if (user != null && user.roleId == '623cc24a8b7ab06011bd1e5f') {
+      if (user != null && ( user.roleId == '623cc24a8b7ab06011bd1e5f' || user.roleId == '623cc24a8b7ab06011bd1e60' )) {
         bcrypt.compare(password, user.password, function (err, result) {
           if (result) {
             const token = jwt.sign({_id: user._id, role: user.roleId, org: org_id, email: user.email, shortOrgId: org_obj.orgId, firstName: user.firstName, lastName: user.lastName }, process.env.TOKEN_SECRET);
