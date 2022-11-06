@@ -5,6 +5,13 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const sanitizeAll = require('../utils/genSantizer');
 const translateIds = require('../utils/translateIds')
 const fetch = require('node-fetch');
+const sendEmail = require("../utils/sendEmail");
+
+function calcDate (endDate) {
+  const startDate = new Date();
+  const differenceInTime = endDate.getTime() - startDate.getTime();
+  return Math.round(differenceInTime / (1000 * 3600 * 24))
+}
 
 const getDashStatController = async (req, res, next) => {
   try {
@@ -286,20 +293,15 @@ const createAccountController = async (req, res, next) => {
       expires: new Date(expiryDate),
     });
     
-    // send account creation confirmation
-    var data = {
-      service_id: process.env.SERVICE_ID,
-      template_id: "template_jy47etj",
-      user_id: process.env.USER_ID,
-      template_params: {firstName: ownerFirstName, emailTo: ownerEmail, password: _unique8DigitVal.toString(), packageName: translateIds('id', packageId).toLowerCase().charAt(0).toUpperCase},
-    };
     // If .env is DEV or PROD
     if (process.env.NODE_ENV != 'test') {
-      var resp = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      var resp = await sendEmail('REGISTRATION',{
+          "packageName": "Standard",
+          "firstName": ownerFirstName,
+          "email": ownerEmail,
+          "password": _unique8DigitVal,
+          "days": calcDate(new Date(expiryDate)) + " Days"
+        },ownerEmail);
     }
     return res.status(200).json({
       user: newUser,
@@ -381,13 +383,21 @@ const decideRequestController = async (req, res, next) => {
 
     // approve or decline request
     if (descision === 'APPROVE') {
-      await Request.updateOne({ _id: new ObjectId(requestId) }, { $set: { status: 'APPROVED' } });
+      await Request.updateOne({ _id: new ObjectId(requestId) }, { $set: { status: 'APPROVED', responseDate: new Date() } });
       var approvedOrg = await Organization.findOne({ name: request.orgName });
+      if (request.type == 'RENEWAL')
+        await sendEmail('RENEWAL',
+        {
+          "package":translateIds("id", request.packageId).toLowerCase().charAt(0).toUpperCase,
+          "amount": request.packageId == '63450c517202e0697ecfb7f6' ? '2,000' : 'Free',
+          "date": new Date().toDateString()
+        }
+        , request.email)
       return res.status(200).json(approvedOrg);
     }
 
     if (descision === 'DECLINE') {
-      await Request.updateOne({ _id: new ObjectId(requestId) }, { $set: { status: 'DECLINED' } });
+      await Request.updateOne({ _id: new ObjectId(requestId) }, { $set: { status: 'DECLINED', responseDate: new Date()  } });
       return res.status(200).json({ message: 'Request Declined' });
     }
 

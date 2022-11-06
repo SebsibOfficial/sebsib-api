@@ -8,6 +8,7 @@ const getToken = require('../utils/getToken');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const fetch = require('node-fetch');
+const sendEmail = require('../utils/sendEmail');
 
 const sendRequestController = async (req, res, next) => {
   var type = sanitizeAll(req.params.type);
@@ -205,13 +206,6 @@ const resetPasswordController = async (req, res, next) => {
       // Generate Password
       const _unique8DigitVal = Math.floor(Math
       .random() * (99999999 - 10000000 + 1)) + 10000000;
-      // Send to user
-      var data = {
-        service_id: process.env.SERVICE_ID,
-        template_id: "template_4iixwcb",
-        user_id: process.env.USER_ID,
-        template_params: {to_name: user.firstName, request_date: new Date().toDateString().slice(0,19), password: _unique8DigitVal, to_email: user.email},
-      };
 
       if (process.env.NODE_ENV == 'test'){
         // Set password
@@ -228,14 +222,15 @@ const resetPasswordController = async (req, res, next) => {
         })
         return res.status(200).json({message: 'Completed'})
       } else {
-        // If .env is DEV or PROD
-        var resp = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        });
+        var resp = await sendEmail('RESET_PASS',
+        {
+          "NewPassword":_unique8DigitVal,
+          "firstName":user.firstName,
+          "date": new Date().toDateString().slice(0,19)
+        },
+        user.email)
 
-        if (resp.status == 200) {
+        if (resp.statusCode >= 200 || resp.statusCode <=300) {
           // Set password
             // Encrypt password
             const salt = bcrypt.genSaltSync(10);
