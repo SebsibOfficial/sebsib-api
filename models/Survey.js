@@ -5,6 +5,10 @@ const surveySchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     required: true,
   },
+  shortSurveyId: {
+    type: String,
+    required: true,
+  },
   name: {
     type: String,
     required: true,

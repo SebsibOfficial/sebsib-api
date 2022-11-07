@@ -36,9 +36,14 @@ const createSurveyController = async (req, res) => {
       // Check if there are similarly named surveys
       var result = await Survey.exists({name: surveyName});
       if (result != null) return res.status(403).json({message: "Survey exisits"});
+
+      const _trimmedName = surveyName.replaceAll(" ", "");
+      const _customSurveyId = _trimmedName.toUpperCase().substring(0, 3) + _trimmedName.toUpperCase().substring(_trimmedName.length - 3, _trimmedName.length) + Math.floor(Math.random() * 90 + 10)
+
       // Insert survey
       var result = await Survey.insertMany({
         _id: new ObjectId(),
+        shortSurveyId: _customSurveyId,
         name: surveyName,
         questions: [],
         responses: [],
@@ -160,7 +165,8 @@ const getSurveyController = async (req, res) => {
     var survey = _survey[0];
     console.log(survey);
     return res.status(200).json({ 
-      _id: survey._id, 
+      _id: survey._id,
+      shortSurveyId: survey.shortSurveyId, 
       name: survey.name, 
       questions: survey.joined_questions.sort(function(x, y){return x.createdOn - y.createdOn;}), 
       responses: survey.joined_responses 
@@ -253,6 +259,7 @@ const sendResponseController = async (req, res) => {
 
       await Response.insertMany([{
         _id: responseId,
+        shortSurveyId: response.shortSurveyId,
         surveyId: response.surveyId,
         name: response.name,
         answers: response.answers ?? '',
