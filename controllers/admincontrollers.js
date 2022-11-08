@@ -155,7 +155,6 @@ const getAllInfoController = async (req, res, next) => {
       if (collection == 'Account') collection = 'Organization'
       if (collection == 'Inputtype') collection = 'InputType'
     }
-    console.log(collection)
     // get all elements of the collection
     const elements = await eval(collection).find();
 

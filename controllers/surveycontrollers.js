@@ -163,7 +163,6 @@ const getSurveyController = async (req, res) => {
     ]);
 
     var survey = _survey[0];
-    console.log(survey);
     return res.status(200).json({ 
       _id: survey._id,
       shortSurveyId: survey.shortSurveyId, 
