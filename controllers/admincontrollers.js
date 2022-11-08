@@ -296,7 +296,7 @@ const createAccountController = async (req, res, next) => {
     // If .env is DEV or PROD
     if (process.env.NODE_ENV != 'test') {
       var resp = await sendEmail('REGISTRATION',{
-          "packageName": "Standard",
+          "packageName": translateIds(packageId),
           "firstName": ownerFirstName,
           "email": ownerEmail,
           "password": _unique8DigitVal,
