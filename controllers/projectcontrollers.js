@@ -51,7 +51,7 @@ const getProjectListController = async (req, res) => {
     ]);
     Orgs = Orgs.filter(org => org._id == orgId);
     if (Orgs.length == 0) return res.status(403).json({message: 'Bad Input'});
-    return res.status(200).send(Orgs[0].project_docs);
+    return res.status(200).send(Orgs[0].project_docs.sort(function(x, y){return x.createdOn - y.createdOn;}));
   } catch (error) {
     console.log(error);
     return res.status(500).json({message: 'Server Error'});
