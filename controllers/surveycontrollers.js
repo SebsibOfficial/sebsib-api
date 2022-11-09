@@ -258,11 +258,12 @@ const sendResponseController = async (req, res) => {
 
       await Response.insertMany([{
         _id: responseId,
-        shortSurveyId: response.shortSurveyId,
         surveyId: response.surveyId,
+        shortSurveyId: response.shortSurveyId,
         name: response.name,
         answers: response.answers ?? '',
         sentDate: response.sentDate,
+        geoPoint: response.geoPoint,
         enumratorId: response.enumratorId,
         createdOn: new Date()
       }]);
