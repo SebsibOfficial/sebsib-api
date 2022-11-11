@@ -33,7 +33,7 @@ else {
 	.catch(error => console.error(error))
 	.then(() => app.listen(3000, () => console.log("API @ 3000 & DB @ "+process.env.PROD_DB_URL))) // Connect to the Database
 }
-
+app.set('trust proxy', 1)
 app.use(limiter); // Limit requests
 app.use(cors()); // Enable CORS
 if (process.env.NODE_ENV != 'test') // Only in Test mode
