@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const { Project, Response, Question, Survey, Organization } = require("../models");
 const ObjectId = require('mongoose').Types.ObjectId;
 const sanitizeAll = require('../utils/genSantizer');
+const getToken = require('../utils/getToken');
 const inputTranslate = require('../utils/translateIds');
 
 const createSurveyController = async (req, res) => {
@@ -31,6 +32,24 @@ const createSurveyController = async (req, res) => {
   var quesIds = []; var surveyId;
   var { surveyName, questions } = req.body;
   surveyName = sanitizeAll(surveyName);
+
+  // Check package if number of questions is allowed
+  var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
+  var org = await Organization.aggregate([   
+    {
+      "$match": {
+        "_id": new ObjectId(orgId)
+      }
+    },   
+    {
+      "$lookup": { from: 'packages', localField: 'packageId', foreignField: '_id', as: 'package_doc'}
+    }
+  ]);
+
+  if (questions.length > org[0].package_doc[0].questions) {
+    return res.status(401).json({message: "Exceeded Question Limit"});
+  }
+
   try {
     // Create the survey
       // Check if there are similarly named surveys
