@@ -6,6 +6,7 @@ const sanitizeAll = require('../utils/genSantizer');
 const translateIds = require('../utils/translateIds')
 const fetch = require('node-fetch');
 const sendEmail = require("../utils/sendEmail");
+const getPrice = require("../utils/getPrice");
 
 function calcDate (endDate) {
   const startDate = new Date();
@@ -388,7 +389,8 @@ const decideRequestController = async (req, res, next) => {
         await sendEmail('RENEWAL',
         {
           "package":translateIds("id", request.packageId).toLowerCase().charAt(0).toUpperCase,
-          "amount": request.packageId == '63450c517202e0697ecfb7f6' ? '2,000' : 'Free',
+          //"amount": request.packageId == '63450c517202e0697ecfb7f6' ? '2,000' : 'Free',
+          "amount": getPrice(request.packageId, request.subType),
           "date": new Date().toDateString()
         }
         , request.email)
