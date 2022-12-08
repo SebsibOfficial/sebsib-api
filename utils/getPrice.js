@@ -1,4 +1,4 @@
-var PKG = require('./price.json');
+var PRICE = require('./price.json');
 
 module.exports = (pkgId, subType) => {
   var multiplier = 0.8;
@@ -6,7 +6,6 @@ module.exports = (pkgId, subType) => {
   PRICE.forEach(PKG => {
     if (pkgId == PKG._id) {
       if (subType == 'ONE_YEAR'){
-        console.log(PKG.price)
         p = (PKG.price * multiplier * 12).toString()
       }
       else

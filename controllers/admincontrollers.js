@@ -383,14 +383,15 @@ const decideRequestController = async (req, res, next) => {
 
     // approve or decline request
     if (descision === 'APPROVE') {
+      var pk_name = translateIds("id", request.packageId)
       await Request.updateOne({ _id: new ObjectId(requestId) }, { $set: { status: 'APPROVED', responseDate: new Date() } });
       var approvedOrg = await Organization.findOne({ name: request.orgName });
       if (request.type == 'RENEWAL')
         await sendEmail('RENEWAL',
         {
-          "package":translateIds("id", request.packageId).toLowerCase().charAt(0).toUpperCase,
-          //"amount": request.packageId == '63450c517202e0697ecfb7f6' ? '2,000' : 'Free',
+          "package":pk_name[0].toUpperCase() + pk_name.toLowerCase().slice(1),
           "amount": getPrice(request.packageId, request.subType),
+          "duration": request.subType == 'ONE_MONTH' ? '30 Days' : '1 Year',
           "date": new Date().toDateString()
         }
         , request.email)

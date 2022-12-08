@@ -50,6 +50,9 @@ const sendRequestController = async (req, res, next) => {
         requestDate: new Date(),
       }])
 
+      // Alert me
+      sendEmail('PLAIN', {from: RGreqObj.firstname+' '+RGreqObj.lastname}, 'yoseph@sebsib.com')
+
       return res.status(200).json(result[0])
     }
     else if (type == 'RENEWAL') {
@@ -89,6 +92,9 @@ const sendRequestController = async (req, res, next) => {
         transactionNo: RNreqObj.transno,
         requestDate: new Date(),
       }])
+
+      // Alert me
+      sendEmail('PLAIN', {from: RNreqObj.firstname+' '+RNreqObj.lastname}, 'yoseph@sebsib.com')
 
       return res.status(200).json(result[0])
     }

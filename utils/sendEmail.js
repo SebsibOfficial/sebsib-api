@@ -24,6 +24,7 @@ const { reset } = require('nodemon')
 module.exports = async (type, data, to) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY)
   var temp_id = ''
+  var msg
   switch (type) {
     case 'REGISTRATION':
       temp_id = 'd-b3059af26a9847c8913b05671cd24c8a';
@@ -37,11 +38,20 @@ module.exports = async (type, data, to) => {
     default:
       break;
   }
-  const msg = {
-    to: to,
-    from: { email: 'info@sebsib.com', name: 'Sebsib' },
-    templateId: temp_id,
-    dynamicTemplateData: data    
+  if (type == 'PLAIN') {
+    msg = {
+      to: to,
+      from: { email: 'info@sebsib.com', name: 'Sebsib' },
+      subject: "New Request form "+data.from,
+      html: '<strong>Approve or Deny</strong> <br><a href="www.sebsib.com">Sebsib</a>',
+    }
+  } else {
+    msg = {
+      to: to,
+      from: { email: 'info@sebsib.com', name: 'Sebsib' },
+      templateId: temp_id,
+      dynamicTemplateData: data    
+    }
   }
 
   try {
