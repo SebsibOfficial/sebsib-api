@@ -35,46 +35,46 @@ const createSurveyController = async (req, res) => {
 
   // Check package if number of questions is allowed
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
-  var org = await Organization.aggregate([   
+  var org = await Organization.aggregate([
     {
       "$match": {
         "_id": new ObjectId(orgId)
       }
-    },   
+    },
     {
-      "$lookup": { from: 'packages', localField: 'packageId', foreignField: '_id', as: 'package_doc'}
+      "$lookup": { from: 'packages', localField: 'packageId', foreignField: '_id', as: 'package_doc' }
     }
   ]);
 
   if (questions.length > org[0].package_doc[0].questions) {
-    return res.status(401).json({message: "Exceeded Question Limit"});
+    return res.status(401).json({ message: "Exceeded Question Limit" });
   }
 
   try {
     // Create the survey
-      // Check if there are similarly named surveys
-      var result = await Survey.exists({name: surveyName});
-      if (result != null) return res.status(403).json({message: "Survey exisits"});
+    // Check if there are similarly named surveys
+    var result = await Survey.exists({ name: surveyName });
+    if (result != null) return res.status(403).json({ message: "Survey exisits" });
 
-      const _trimmedName = surveyName.replaceAll(" ", "");
-      const _customSurveyId = _trimmedName.toUpperCase().substring(0, 3) + _trimmedName.toUpperCase().substring(_trimmedName.length - 3, _trimmedName.length) + Math.floor(Math.random() * 90 + 10)
+    const _trimmedName = surveyName.replaceAll(" ", "");
+    const _customSurveyId = _trimmedName.toUpperCase().substring(0, 3) + _trimmedName.toUpperCase().substring(_trimmedName.length - 3, _trimmedName.length) + Math.floor(Math.random() * 90 + 10)
 
-      // Insert survey
-      var result = await Survey.insertMany({
-        _id: new ObjectId(),
-        shortSurveyId: _customSurveyId,
-        name: surveyName,
-        questions: [],
-        responses: [],
-        description: '',
-        pic: '',
-        createdOn: new Date()
-      })
-      surveyId = result[0]._id;
-      // Get the question Id's
-      for (let i = 0; i < questions.length; i++) {
-        quesIds.push(questions[i].id);      
-      }
+    // Insert survey
+    var result = await Survey.insertMany({
+      _id: new ObjectId(),
+      shortSurveyId: _customSurveyId,
+      name: surveyName,
+      questions: [],
+      responses: [],
+      description: '',
+      pic: '',
+      createdOn: new Date()
+    })
+    surveyId = result[0]._id;
+    // Get the question Id's
+    for (let i = 0; i < questions.length; i++) {
+      quesIds.push(questions[i].id);
+    }
 
     // Insert the question
     for (let i = 0; i < questions.length; i++) {
@@ -91,7 +91,7 @@ const createSurveyController = async (req, res) => {
         questionText: question.question,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
         createdOn: new Date()
-      });         
+      });
     }
     // Insert the Ids of the question in the survey
     var iis = await Survey.updateOne({ _id: surveyId }, { $push: { questions: quesIds } })
@@ -145,7 +145,7 @@ const getResponsesController = async (req, res) => {
         }
       }
     ]);
-    return res.status(200).json({ questions: survey[0].joined_questions.sort(function(x, y){return x.createdOn - y.createdOn;}), responses: survey[0].joined_responses });
+    return res.status(200).json({ questions: survey[0].joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }), responses: survey[0].joined_responses });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
@@ -182,15 +182,15 @@ const getSurveyController = async (req, res) => {
     ]);
 
     var survey = _survey[0];
-    return res.status(200).json({ 
+    return res.status(200).json({
       _id: survey._id,
-      shortSurveyId: survey.shortSurveyId, 
-      name: survey.name, 
-      questions: survey.joined_questions.sort(function(x, y){return x.createdOn - y.createdOn;}), 
-      responses: survey.joined_responses 
+      shortSurveyId: survey.shortSurveyId,
+      name: survey.name,
+      questions: survey.joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }),
+      responses: survey.joined_responses
       /*, description: survey.description, 
       picture: survey.picture, 
-      createdOn: survey.createdOn */ 
+      createdOn: survey.createdOn */
     });
 
   } catch (error) {
@@ -219,21 +219,21 @@ const getRecentResponseController = async (req, res, next) => {
         }
       },
     ]);
-    
+
     var all_projects = _orgs[0].joined_projects;
     for (let index = 0; index < all_projects.length; index++) {
       const survey_arr = all_projects[index].surveysId;
       for (let j = 0; j < survey_arr.length; j++) {
         const element = survey_arr[j];
         surveys.push(element);
-      }      
+      }
     }
-    
+
     // return all the response who have surveyId
     var _responses = await Response.aggregate([
       {
         "$match": {
-          "surveyId": {"$in": surveys}
+          "surveyId": { "$in": surveys }
         }
       },
       {
@@ -252,24 +252,41 @@ const getRecentResponseController = async (req, res, next) => {
           "as": "enum_obj",
         }
       },
-    ]).sort({sentDate: -1});
+    ]).sort({ sentDate: -1 });
 
     for (let index = 0; index < _responses.length; index++) {
       _responses[index].enum_obj[0].password = "*";
     }
 
-    return res.status(200).json({resp: _responses, proj: all_projects});
+    return res.status(200).json({ resp: _responses, proj: all_projects });
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({message: "Server Error"});
+    return res.status(500).json({ message: "Server Error" });
   }
 }
 
 const sendResponseController = async (req, res) => {
-
-  var responseData = req.body;  // list of response data 
+  // list of response data 
+  var responseData = req.body;
+  // get enumerator id
+  const enumeratorId = sanitizeAll(req.params.enumeratorId);
   try {
+    var survey = await Survey.findOne({ _id: responseData.surveyId });
+    if (!survey) return res.status(403).json({ message: "Survey does not exist anymore" });
+
+    // get the project where the surveys id is inside the surveysID array
+    var project = await Project.findOne({ surveysId: { $in: [survey._id] } });
+    if (!project) return res.status(403).json({ message: "Project does not exist anymore" });
+
+    // check if the projectId is in the enumerator's project array
+    var enumerator = await User.findOne({ _id: enumeratorId });
+    if (!enumerator) return res.status(403).json({ message: "Enumerator does not exist anymore" });
+    
+    if (!enumerator.projectsId.includes(project._id)) {
+      return res.status(403).json({ message: "Enumerator does not have access to this project" });
+    }
+
     // loop through list to create a response reference and find survey to modify
     for (let i = 0; i < responseData.length; i++) {
       var response = responseData[i];
@@ -314,10 +331,10 @@ const deleteSurveyController = async (req, res, next) => {
     var dfp = await Project.updateOne({ _id: Projectid }, { $pull: { surveysId: survey._id } })
     // Remove from survey collection
     var ds = await Survey.findOneAndDelete({ _id: SurveyId });
-    return res.status(200).json(ds); 
+    return res.status(200).json(ds);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({message: "Server Error"});
+    return res.status(500).json({ message: "Server Error" });
   }
 }
 
