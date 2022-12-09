@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { Project, Response, Question, Survey, Organization } = require("../models");
+const { Project, Response, Question, Survey, Organization, User } = require("../models");
 const ObjectId = require('mongoose').Types.ObjectId;
 const sanitizeAll = require('../utils/genSantizer');
 const getToken = require('../utils/getToken');
@@ -269,44 +269,51 @@ const getRecentResponseController = async (req, res, next) => {
 const sendResponseController = async (req, res) => {
   // list of response data 
   var responseData = req.body;
-  // get enumerator id
-  const enumeratorId = sanitizeAll(req.params.enumeratorId);
+
   try {
-    var survey = await Survey.findOne({ _id: responseData.surveyId });
-    if (!survey) return res.status(403).json({ message: "Survey does not exist anymore" });
-
-    // get the project where the surveys id is inside the surveysID array
-    var project = await Project.findOne({ surveysId: { $in: [survey._id] } });
-    if (!project) return res.status(403).json({ message: "Project does not exist anymore" });
-
-    // check if the projectId is in the enumerator's project array
-    var enumerator = await User.findOne({ _id: enumeratorId });
-    if (!enumerator) return res.status(403).json({ message: "Enumerator does not exist anymore" });
-    
-    if (!enumerator.projectsId.includes(project._id)) {
-      return res.status(403).json({ message: "Enumerator does not have access to this project" });
-    }
-
     // loop through list to create a response reference and find survey to modify
     for (let i = 0; i < responseData.length; i++) {
       var response = responseData[i];
       var responseId = response._id;
+      
+      // get enumerator id
+      const enumeratorId = response.enumratorId;
 
-      await Response.insertMany([{
-        _id: responseId,
-        surveyId: response.surveyId,
-        shortSurveyId: response.shortSurveyId,
-        name: response.name,
-        answers: response.answers ?? '',
-        sentDate: response.sentDate,
-        geoPoint: response.geoPoint,
-        enumratorId: response.enumratorId,
-        createdOn: new Date()
-      }]);
+      var survey = await Survey.findOne({ _id: new ObjectId(response.surveyId) });
+      if (!survey) return res.status(403).json({ message: "Survey does not exist anymore" });
 
-      await Survey.updateOne({ _id: response.surveyId }, { $push: { "responses": responseId } }).clone();
+      // get the project where the surveys id is inside the surveysID array
+      var project = await Project.findOne({ surveysId: { $in: [survey._id] } });
+      if (!project) return res.status(403).json({ message: "Project does not exist anymore" });
+
+      // check if the projectId is in the enumerator's project array
+      var enumerator = await User.findOne({ _id: new ObjectId(enumeratorId) });
+      if (!enumerator) return res.status(403).json({ message: "Enumerator does not exist anymore" });
+
+      var enumeratorExists = await enumerator.projectsId.includes(new ObjectId(project._id));
+      console.log(enumeratorExists);
+      console.log(enumerator.role === "623cc24a8b7ab06011bd1e60");
+      console.log(enumerator.role == "623cc24a8b7ab06011bd1e60");
+
+      if (enumeratorExists || enumerator.role === "623cc24a8b7ab06011bd1e60") {
+        await Response.insertMany([{
+          _id: responseId,
+          surveyId: response.surveyId,
+          shortSurveyId: response.shortSurveyId,
+          name: response.name,
+          answers: response.answers ?? '',
+          sentDate: response.sentDate,
+          geoPoint: response.geoPoint,
+          enumratorId: response.enumratorId,
+          createdOn: new Date()
+        }]);
+
+        await Survey.updateOne({ _id: response.surveyId }, { $push: { "responses": responseId } }).clone();
+        return res.status(200).json({ message: "success" })
+      }
+
+      return res.status(403).json({ message: "Enumerator does not have access to this project" });
     }
-    return res.status(200).json({ message: "success" })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
