@@ -275,7 +275,7 @@ const sendResponseController = async (req, res) => {
     for (let i = 0; i < responseData.length; i++) {
       var response = responseData[i];
       var responseId = response._id;
-      
+
       // get enumerator id
       const enumeratorId = response.enumratorId;
 
@@ -345,6 +345,28 @@ const deleteSurveyController = async (req, res, next) => {
   }
 }
 
+const syncSurveysController = async (req, res, next) => {
+  // accepts an array of surveyIds, check if the surveys are availiable in the database
+  // return the ids that are not availiable.
+  const { surveyIds } = req.body;
+  try {
+    var deletedSurveys = [];
+    for (let index = 0; index < surveyIds.length; index++) {
+      const surveyId = surveyIds[index];
+      var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
+
+      if (!survey) {
+        deletedSurveys.push(surveyId);
+      }
+    }
+    return res.status(200).json(deletedSurveys);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
 module.exports = {
   createSurveyController,
   getSurveyListController,
@@ -352,5 +374,6 @@ module.exports = {
   getSurveyController,
   getResponsesController,
   sendResponseController,
-  deleteSurveyController
+  deleteSurveyController,
+  syncSurveysController
 }
