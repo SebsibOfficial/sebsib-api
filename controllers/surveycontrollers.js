@@ -291,29 +291,26 @@ const sendResponseController = async (req, res) => {
       if (!enumerator) return res.status(403).json({ message: "Enumerator does not exist anymore" });
 
       var enumeratorExists = await enumerator.projectsId.includes(new ObjectId(project._id));
-      console.log(enumeratorExists);
-      console.log(enumerator.role === "623cc24a8b7ab06011bd1e60");
-      console.log(enumerator.role == "623cc24a8b7ab06011bd1e60");
 
-      if (enumeratorExists || enumerator.role === "623cc24a8b7ab06011bd1e60") {
-        await Response.insertMany([{
-          _id: responseId,
-          surveyId: response.surveyId,
-          shortSurveyId: response.shortSurveyId,
-          name: response.name,
-          answers: response.answers ?? '',
-          sentDate: response.sentDate,
-          geoPoint: response.geoPoint,
-          enumratorId: response.enumratorId,
-          createdOn: new Date()
-        }]);
 
-        await Survey.updateOne({ _id: response.surveyId }, { $push: { "responses": responseId } }).clone();
-        return res.status(200).json({ message: "success" })
-      }
+      var enumeratorCondition = enumeratorExists || enumerator.role === "623cc24a8b7ab06011bd1e60";
+      if (!enumeratorCondition) return res.status(403).json({ message: "Enumerator does not have access to this project" });
 
-      return res.status(403).json({ message: "Enumerator does not have access to this project" });
+      await Response.insertMany([{
+        _id: responseId,
+        surveyId: response.surveyId,
+        shortSurveyId: response.shortSurveyId,
+        name: response.name,
+        answers: response.answers ?? '',
+        sentDate: response.sentDate,
+        geoPoint: response.geoPoint,
+        enumratorId: response.enumratorId,
+        createdOn: new Date()
+      }]);
+
+      await Survey.updateOne({ _id: response.surveyId }, { $push: { "responses": responseId } }).clone();
     }
+    return res.status(200).json({ message: "success" })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
