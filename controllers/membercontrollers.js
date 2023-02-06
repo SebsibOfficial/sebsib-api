@@ -6,6 +6,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const mongodb = require('mongodb');
 const getToken = require('../utils/getToken')
 const sanitizeAll = require('../utils/genSantizer');
+const translateIds = require("../utils/translateIds");
 
 const getMemberListController = async (req, res, next) => {
   var orgId = req.params.orgId;
@@ -13,24 +14,24 @@ const getMemberListController = async (req, res, next) => {
   if (orgId == null) return res.status(400).json({message: 'Bad Input'})
   try {
     const memberlist = await User.find({organizationId: orgId})
-    res.status(200).send(memberlist)
+    return res.status(200).send(memberlist)
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'})
+    return res.status(500).json({message: 'Server Error'})
   }
 }
 
 const createMemberController = async (req, res, next) => {
-  var {email, password, phone, firstname, lastname, projectsId} = req.body;
+  var {email, password, phone, role, firstname, lastname, projectsId} = req.body;
   // Required fields must not be undefined
-  if (email === undefined || password === undefined || projectsId === undefined) return res.status(400).json({message: 'Bad Input'});
+  if (email === undefined || password === undefined || projectsId === undefined || role === undefined) return res.status(400).json({message: 'Bad Input'});
   // Remove undefined types
   phone = phone ?? '';
   firstname = firstname ?? '';
   lastname = lastname ?? '';
   // Check password length
   if (password.length < 8) return res.status(400).json({message: 'Password too short'});
-  email = sanitizeAll(email); password = sanitizeAll(password);phone = sanitizeAll(phone);
+  email = sanitizeAll(email);phone = sanitizeAll(phone);
   firstname = sanitizeAll(firstname); lastname = sanitizeAll(lastname); projectsId = sanitizeAll(projectsId);
 
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
@@ -57,7 +58,7 @@ const createMemberController = async (req, res, next) => {
       _id: new ObjectId(),
       organizationId: orgId,
       projectsId: projectsId,
-      roleId: new ObjectId('623cc24a8b7ab06011bd1e5f'),
+      roleId: new ObjectId(translateIds('text', role)),
       email: email,
       phone: phone,
       firstName: firstname,
@@ -67,10 +68,10 @@ const createMemberController = async (req, res, next) => {
       createdOn: new Date()
     }]);
     result[0].password = '*';
-    res.status(200).send(result);
+    return res.status(200).send(result);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'});
+    return res.status(500).json({message: 'Server Error'});
   }
   
 }
@@ -80,17 +81,17 @@ const getMemberController = async (req, res, next) => {
   try {
     var member = await User.findOne({_id: id});
     member.password = "*";
-    res.status(200).json(member);
+    return res.status(200).json(member);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'});
+    return res.status(500).json({message: 'Server Error'});
   }
 }
 
 const editMemberController = async (req, res, next) => {
-  var {email, password, username, projectsId} = req.body;
+  var {email, password, phone, firstname, lastname, projectsId} = req.body;
   var userId = sanitizeAll(req.params.id);
-  email = sanitizeAll(email); password = sanitizeAll(password);username = sanitizeAll(username); projectsId = sanitizeAll(projectsId);
+  email = sanitizeAll(email); firstname = sanitizeAll(firstname); lastname = sanitizeAll(lastname); phone = sanitizeAll(phone); projectsId = sanitizeAll(projectsId);
   
   try {
     // Check if string is an email
@@ -98,7 +99,7 @@ const editMemberController = async (req, res, next) => {
       return res.status(400).json({message: 'Invalid Email'});
     }
     // Check if username exists
-    if (await User.exists({username: username, _id: { $ne: userId}}) || await User.exists({email: email, _id: {$ne: userId}})) {
+    if (await User.exists({email: email, _id: {$ne: userId}})) {
       return res.status(400).json({message: 'Username or Email Exists'});
     }
     const user = await User.findOne({_id: userId});
@@ -121,20 +122,24 @@ const editMemberController = async (req, res, next) => {
       var result = await User.updateOne({_id: userId},{
         projectsId: projectsId,
         email: email,
-        username: username,
+        firstName: firstname,
+        lastName: lastname,
+        phone: phone
       });
     } else {
       var result = await User.updateOne({_id: userId},{
         projectsId: projectsId,
         email: email,
-        username: username,
+        firstName: firstname,
+        lastName: lastname,
+        phone: phone,
         password: hash,
       });
     }
-    res.status(200).send(result);
+    return res.status(200).send(result);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'});
+    return res.status(500).json({message: 'Server Error'});
   }
 }
 
@@ -148,10 +153,10 @@ const deleteMemberController = async (req, res, next) => {
     if (user.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
     // Remove from User collection
     const result = await User.findOneAndDelete({_id: id});
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: 'Server Error'});
+    return res.status(500).json({message: 'Server Error'});
   }
 }
 
@@ -175,10 +180,10 @@ const addMemberController = async (req, res) => {
     }
     // Insert the project id in the member
     var ip = await User.updateMany({_id: {$in : memberIds}}, {$push: {projectsId: projectId}});
-    res.status(200).json({members: memberIds, project: projectId});
+    return res.status(200).json({members: memberIds, project: projectId});
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server Error"});
+    return res.status(500).json({message: "Server Error"});
   }
 }
 
@@ -196,10 +201,10 @@ const removeMemberController = async (req, res) => {
     if (!user.projectsId.includes(projectId)) return res.status(401).json({message: "User not in the project"});
     // Remove the project id in the member
     var rp = await User.findOneAndUpdate({_id: memberId}, {$pull: {projectsId: projectId}});
-    res.status(200).json({member: memberId, project: projectId});
+    return res.status(200).json({member: memberId, project: projectId});
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server Error"});
+    return res.status(500).json({message: "Server Error"});
   }
 }
 

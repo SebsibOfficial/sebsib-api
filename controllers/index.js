@@ -1,9 +1,22 @@
-const { getMemberListController, createMemberController, getMemberController, editMemberController, 
+const { getMemberListController, createMemberController, getMemberController, editMemberController,
   deleteMemberController, removeMemberController, addMemberController } = require('../controllers/membercontrollers');
-const { getSurveyListController, createSurveyController, getRecentResponseController, getSurveyController, 
-  sendResponseController, deleteSurveyController, getResponsesController } = require('../controllers/surveycontrollers');
+const { getSurveyListController, createSurveyController, getRecentResponseController, getSurveyController,
+  sendResponseController, deleteSurveyController, getResponsesController, syncSurveysController } = require('../controllers/surveycontrollers');
 const { getProjectListController, createProjectController, deleteProjectController } = require('../controllers/projectcontrollers');
 const { editSettingsController } = require('../controllers/settingcontrollers');
+const {sendRequestController,  getOrgStatusController,  changePasswordController, resetPasswordController} = require('../controllers/othercontrollers')
+const { getDashStatController, getAllAccountInfoController,
+  getRequestsController,
+  getInfoBriefController,
+  getAllInfoController,
+  getAccountInfoController,
+  getAdminsController,
+  createAccountController,
+  addAdminController,
+  decideRequestController,
+  editAccountController,
+  deleteAccountController,
+  deleteAdminController, } = require('../controllers/admincontrollers')
 
 module.exports = {
   getMemberListController,
@@ -16,7 +29,7 @@ module.exports = {
   getMemberController,
   getRecentResponseController,
   getSurveyController,
-  createProjectController, 
+  createProjectController,
   sendResponseController,
   editMemberController,
   deleteMemberController,
@@ -24,5 +37,23 @@ module.exports = {
   deleteSurveyController,
   getResponsesController,
   removeMemberController,
-  addMemberController
+  addMemberController,
+  sendRequestController,
+  getOrgStatusController,
+  changePasswordController,
+  resetPasswordController,
+  getDashStatController,
+  getAllAccountInfoController,
+  getRequestsController,
+  getInfoBriefController,
+  getAllInfoController,
+  getAccountInfoController,
+  getAdminsController,
+  createAccountController,
+  addAdminController,
+  decideRequestController,
+  editAccountController,
+  deleteAccountController,
+  deleteAdminController,
+  syncSurveysController,
 }

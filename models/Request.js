@@ -21,6 +21,10 @@ const requestSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  orgId: {
+    type: String,
+    default: '',
+  },
   email: {
     type: String,
     required: true,
@@ -29,17 +33,25 @@ const requestSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  packageId: {
+    type: mongoose.Types.ObjectId,
+    required: true
+  },
   status: {
     type: String,
-    required: true,
+    default: 'PENDING',
   },
   bank: {
     type: String,
-    required: true,
+    default: '',
   },
   transactionNo: {
     type: String,
-    required: true,
+    default: '',
+  },
+  subType: {
+    type: String,
+    default: ''
   },
   requestDate: {
     type: Date,
@@ -47,7 +59,7 @@ const requestSchema = new mongoose.Schema({
   },
   responseDate: {
     type: Date,
-    required: true
+    required: false
   }
 })
 

@@ -3,10 +3,12 @@ module.exports = {
     ADMIN: "ADMIN",
     MEMBER: "MEMBER",
     SUPER_ADMIN: "SUPER_ADMIN",
-    OWNER: "OWNER"
+    OWNER: "OWNER",
+    ANALYST: "ANALYST"
   },
   PACKAGES:{
-    FREE_TRAIL: "FREE TRAIL",
+    FREE_TRIAL: "FREE TRIAL",
+    STANDARD: "STANDARD",
     UNLIMITED: "UNLIMITED"
   },
   CHECK:{
@@ -16,6 +18,7 @@ module.exports = {
   },
   PLATFORMS:[
     "SEBSIB_OFFICE_1",
-    "SEBSIB_COLLECT_2"
+    "SEBSIB_COLLECT_2",
+    "SEBSIB_ADMIN_3"
   ]
 }

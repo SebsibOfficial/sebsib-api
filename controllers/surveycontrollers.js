@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
-const { Project, Response, Question, Survey, Organization } = require("../models");
+const { Project, Response, Question, Survey, Organization, User } = require("../models");
 const ObjectId = require('mongoose').Types.ObjectId;
 const sanitizeAll = require('../utils/genSantizer');
+const getToken = require('../utils/getToken');
 const inputTranslate = require('../utils/translateIds');
 
 const createSurveyController = async (req, res) => {
@@ -31,26 +32,49 @@ const createSurveyController = async (req, res) => {
   var quesIds = []; var surveyId;
   var { surveyName, questions } = req.body;
   surveyName = sanitizeAll(surveyName);
+
+  // Check package if number of questions is allowed
+  var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
+  var org = await Organization.aggregate([
+    {
+      "$match": {
+        "_id": new ObjectId(orgId)
+      }
+    },
+    {
+      "$lookup": { from: 'packages', localField: 'packageId', foreignField: '_id', as: 'package_doc' }
+    }
+  ]);
+
+  if (questions.length > org[0].package_doc[0].questions) {
+    return res.status(401).json({ message: "Exceeded Question Limit" });
+  }
+
   try {
     // Create the survey
-      // Check if there are similarly named surveys
-      var result = await Survey.exists({name: surveyName});
-      if (result != null) return res.status(403).json({message: "Survey exisits"});
-      // Insert survey
-      var result = await Survey.insertMany({
-        _id: new ObjectId(),
-        name: surveyName,
-        questions: [],
-        responses: [],
-        description: '',
-        pic: '',
-        createdOn: new Date()
-      })
-      surveyId = result[0]._id;
-      // Get the question Id's
-      for (let i = 0; i < questions.length; i++) {
-        quesIds.push(questions[i].id);      
-      }
+    // Check if there are similarly named surveys
+    var result = await Survey.exists({ name: surveyName });
+    if (result != null) return res.status(403).json({ message: "Survey exisits" });
+
+    const _trimmedName = surveyName.replaceAll(" ", "");
+    const _customSurveyId = _trimmedName.toUpperCase().substring(0, 3) + _trimmedName.toUpperCase().substring(_trimmedName.length - 3, _trimmedName.length) + Math.floor(Math.random() * 90 + 10)
+
+    // Insert survey
+    var result = await Survey.insertMany({
+      _id: new ObjectId(),
+      shortSurveyId: _customSurveyId,
+      name: surveyName,
+      questions: [],
+      responses: [],
+      description: '',
+      pic: '',
+      createdOn: new Date()
+    })
+    surveyId = result[0]._id;
+    // Get the question Id's
+    for (let i = 0; i < questions.length; i++) {
+      quesIds.push(questions[i].id);
+    }
 
     // Insert the question
     for (let i = 0; i < questions.length; i++) {
@@ -63,19 +87,20 @@ const createSurveyController = async (req, res) => {
           answerId: question.showPattern.ansIs
         } : null,
         options: question.choices,
+        mandatory: question.mandatory,
         questionText: question.question,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
         createdOn: new Date()
-      });         
+      });
     }
     // Insert the Ids of the question in the survey
     var iis = await Survey.updateOne({ _id: surveyId }, { $push: { questions: quesIds } })
     // Insert the survey Id in the surveylist in Projects
     var iip = await Project.updateOne({ _id: projectId }, { $push: { surveysId: surveyId } })
-    res.status(200).json({ iip, iis, iq });
+    return res.status(200).json({ iip, iis, iq });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server Error!" });
+    return res.status(500).json({ message: "Server Error!" });
   }
 
 }
@@ -88,7 +113,7 @@ const getSurveyListController = async (req, res) => {
     ]);
     var surveys = projects.filter(project => project._id == projectId);
     if (surveys.length == 0) return res.status(403).json({ message: 'Bad Input' });
-    res.status(200).send(surveys[0].survey_docs);
+    return res.status(200).send(surveys[0].survey_docs);
   } catch (error) {
     console.log(error);
   }
@@ -120,7 +145,7 @@ const getResponsesController = async (req, res) => {
         }
       }
     ]);
-    res.status(200).json({ questions: survey[0].joined_questions.sort(function(x, y){return x.createdOn - y.createdOn;}), responses: survey[0].joined_responses });
+    return res.status(200).json({ questions: survey[0].joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }), responses: survey[0].joined_responses });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
@@ -157,15 +182,15 @@ const getSurveyController = async (req, res) => {
     ]);
 
     var survey = _survey[0];
-    console.log(survey);
-    res.status(200).json({ 
-      _id: survey._id, 
-      name: survey.name, 
-      questions: survey.joined_questions.sort(function(x, y){return x.createdOn - y.createdOn;}), 
-      responses: survey.joined_responses 
+    return res.status(200).json({
+      _id: survey._id,
+      shortSurveyId: survey.shortSurveyId,
+      name: survey.name,
+      questions: survey.joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }),
+      responses: survey.joined_responses
       /*, description: survey.description, 
       picture: survey.picture, 
-      createdOn: survey.createdOn */ 
+      createdOn: survey.createdOn */
     });
 
   } catch (error) {
@@ -194,21 +219,21 @@ const getRecentResponseController = async (req, res, next) => {
         }
       },
     ]);
-    
+
     var all_projects = _orgs[0].joined_projects;
     for (let index = 0; index < all_projects.length; index++) {
       const survey_arr = all_projects[index].surveysId;
       for (let j = 0; j < survey_arr.length; j++) {
         const element = survey_arr[j];
         surveys.push(element);
-      }      
+      }
     }
-    
+
     // return all the response who have surveyId
     var _responses = await Response.aggregate([
       {
         "$match": {
-          "surveyId": {"$in": surveys}
+          "surveyId": { "$in": surveys }
         }
       },
       {
@@ -227,42 +252,65 @@ const getRecentResponseController = async (req, res, next) => {
           "as": "enum_obj",
         }
       },
-    ]).sort({sentDate: -1});
+    ]).sort({ sentDate: -1 });
 
     for (let index = 0; index < _responses.length; index++) {
       _responses[index].enum_obj[0].password = "*";
     }
 
-    return res.status(200).json({resp: _responses, proj: all_projects});
+    return res.status(200).json({ resp: _responses, proj: all_projects });
 
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server Error"});
+    return res.status(500).json({ message: "Server Error" });
   }
 }
 
 const sendResponseController = async (req, res) => {
+  // list of response data 
+  var responseData = req.body;
 
-  var responseData = req.body;  // list of response data 
   try {
     // loop through list to create a response reference and find survey to modify
     for (let i = 0; i < responseData.length; i++) {
       var response = responseData[i];
       var responseId = response._id;
 
+      // get enumerator id
+      const enumeratorId = response.enumratorId;
+
+      var survey = await Survey.findOne({ _id: new ObjectId(response.surveyId) });
+      if (!survey) return res.status(403).json({ message: "Survey does not exist anymore" });
+
+      // get the project where the surveys id is inside the surveysID array
+      var project = await Project.findOne({ surveysId: { $in: [survey._id] } });
+      if (!project) return res.status(403).json({ message: "Project does not exist anymore" });
+
+      // check if the projectId is in the enumerator's project array
+      var enumerator = await User.findOne({ _id: new ObjectId(enumeratorId) });
+      if (!enumerator) return res.status(403).json({ message: "Enumerator does not exist anymore" });
+
+      var enumeratorExists = await enumerator.projectsId.includes(new ObjectId(project._id));
+
+
+      var enumeratorCondition = enumeratorExists || enumerator.role === "623cc24a8b7ab06011bd1e60";
+      if (!enumeratorCondition) return res.status(403).json({ message: "Enumerator does not have access to this project" });
+
       await Response.insertMany([{
         _id: responseId,
         surveyId: response.surveyId,
+        shortSurveyId: response.shortSurveyId,
         name: response.name,
         answers: response.answers ?? '',
         sentDate: response.sentDate,
+        geoPoint: response.geoPoint,
         enumratorId: response.enumratorId,
         createdOn: new Date()
       }]);
 
       await Survey.updateOne({ _id: response.surveyId }, { $push: { "responses": responseId } }).clone();
     }
-    res.status(200).json({ message: "success" })
+    return res.status(200).json({ message: "success" })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
@@ -287,10 +335,32 @@ const deleteSurveyController = async (req, res, next) => {
     var dfp = await Project.updateOne({ _id: Projectid }, { $pull: { surveysId: survey._id } })
     // Remove from survey collection
     var ds = await Survey.findOneAndDelete({ _id: SurveyId });
-    return res.status(200).json(ds); 
+    return res.status(200).json(ds);
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server Error"});
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
+const syncSurveysController = async (req, res, next) => {
+  // accepts an array of surveyIds, check if the surveys are availiable in the database
+  // return the ids that are not availiable.
+  const { surveyIds } = req.body;
+  try {
+    var deletedSurveys = [];
+    for (let index = 0; index < surveyIds.length; index++) {
+      const surveyId = surveyIds[index];
+      var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
+
+      if (!survey) {
+        deletedSurveys.push(surveyId);
+      }
+    }
+    return res.status(200).json(deletedSurveys);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
   }
 }
 
@@ -301,5 +371,6 @@ module.exports = {
   getSurveyController,
   getResponsesController,
   sendResponseController,
-  deleteSurveyController
+  deleteSurveyController,
+  syncSurveysController
 }

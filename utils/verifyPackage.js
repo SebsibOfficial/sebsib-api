@@ -4,14 +4,14 @@ const jwt = require('jsonwebtoken');
 
 module.exports = async (token, forParam) => {
 
-  var userId = jwt.verify(token, process.env.TOKEN_SECRET)._id;
+  var orgId = jwt.verify(token, process.env.TOKEN_SECRET).org;
   var projects = [], projectCount, Aproject, surveyCount = 0, package, memberCount;
   var orgs = await Organization.aggregate([
     {
       $lookup: { from: 'packages', localField: 'packageId', foreignField: '_id', as: 'package_doc'}
     }
   ]);
-  orgs = orgs.filter(org => org.ownerId == userId);
+  orgs = orgs.filter(org => org._id == orgId);
   package = orgs[0].package_doc[0];
   
   // Count the projects

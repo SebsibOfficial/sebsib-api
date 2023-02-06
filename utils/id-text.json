@@ -79,6 +79,10 @@
   "text": "ADMIN"
 },
 {
+  "_id":"6362ad70297414bfb79bdf01",
+  "text": "ANALYST"
+},
+{
   "_id":"623cc24a8b7ab06011bd1e62",
   "text": "SUPER"
 },
@@ -88,7 +92,11 @@
 
 {
   "_id":"623d73a051e8bcb894b3f7df",
-  "text": "FREE TRAIL"
+  "text": "FREE TRIAL"
+},
+{
+  "_id":"63450c517202e0697ecfb7f6",
+  "text": "STANDARD"
 },
 {
   "_id":"623d73a051e8bcb894b3f7e0",

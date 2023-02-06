@@ -1,4 +1,6 @@
-35.170.89.118.nip.io {
-    reverse_proxy localhost:3000
+138.68.186.119.nip.io {
+ reverse_proxy localhost:3000
+ reverse_proxy /api/* localhost:3000
+ reverse_proxy /file/* localhost:3003
 }
 
