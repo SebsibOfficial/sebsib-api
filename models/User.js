@@ -36,6 +36,10 @@ const userSchema = new mongoose.Schema({
     required: false,
     default: ''
   },
+  hasPassChange: {
+    type: Boolean,
+    required: true
+  },
   password: {
     type: String,
     required: true,

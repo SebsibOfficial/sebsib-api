@@ -32,7 +32,7 @@ const responseSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true
+    required: false
   },
   answers: {
     type: [answerScheme],
@@ -44,11 +44,11 @@ const responseSchema = new mongoose.Schema({
   },
   geoPoint: {
     type: String,
-    required: true
+    required: false
   },
   enumratorId: {
     type: mongoose.Types.ObjectId,
-    required: true
+    required: false
   },
   createdOn: {
     type: Date,
