@@ -208,7 +208,10 @@ const getSurveyController = async (req, res) => {
       shortSurveyId: survey.shortSurveyId,
       name: survey.name,
       questions: survey.joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }),
-      responses: survey.joined_responses
+      responses: survey.joined_responses,
+      type: survey.type,
+      link: survey.link,
+      status: survey.status,
       /*, description: survey.description, 
       picture: survey.picture, 
       createdOn: survey.createdOn */
