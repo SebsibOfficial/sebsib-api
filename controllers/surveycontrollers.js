@@ -4,7 +4,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const sanitizeAll = require('../utils/genSantizer');
 const getToken = require('../utils/getToken');
 const inputTranslate = require('../utils/translateIds');
-
+const { customSurveyIdGenerator, customSurveyLinkGenerator } = require('../utils/surveyGenerators');
 const createSurveyController = async (req, res) => {
   /*
  THE INTERFACE FOR THE REQUEST [would be cool if you could only accept this kind of request]
@@ -30,8 +30,9 @@ const createSurveyController = async (req, res) => {
 */
   var projectId = sanitizeAll(req.params.projectId);
   var quesIds = []; var surveyId;
-  var { surveyName, questions } = req.body;
+  var { surveyName, questions, type } = req.body;
   surveyName = sanitizeAll(surveyName);
+  type = sanitizeAll(type);
 
   // Check package if number of questions is allowed
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
@@ -50,27 +51,44 @@ const createSurveyController = async (req, res) => {
     return res.status(401).json({ message: "Exceeded Question Limit" });
   }
 
+  if (type === null || type === undefined) return res.status(401).json({ message: "Type cannot be null" });
+
+  if (type.toUpperCase() !== "ONLINE" && type.toUpperCase() !== "INCENTIVIZED" && type.toUpperCase() !== "REGULAR")
+    return res.status(401).json({ message: "Invalid Survey Type" });
+
   try {
     // Create the survey
     // Check if there are similarly named surveys
     var result = await Survey.exists({ name: surveyName });
     if (result != null) return res.status(403).json({ message: "Survey exisits" });
 
-    const _trimmedName = surveyName.replaceAll(" ", "");
-    const _customSurveyId = _trimmedName.toUpperCase().substring(0, 3) + _trimmedName.toUpperCase().substring(_trimmedName.length - 3, _trimmedName.length) + Math.floor(Math.random() * 90 + 10)
+
+    const trimmedName = surveyName.replaceAll(" ", "");
+    const customSurveyId = await customSurveyIdGenerator(trimmedName);
+
+
+    var link = '';
+    if (type.toUpperCase() === "ONLINE" || type.toUpperCase() === "INCENTIVIZED") {
+
+      link = await customSurveyLinkGenerator();
+    }
 
     // Insert survey
     var result = await Survey.insertMany({
       _id: new ObjectId(),
-      shortSurveyId: _customSurveyId,
+      shortSurveyId: customSurveyId,
       name: surveyName,
       questions: [],
       responses: [],
       description: '',
       pic: '',
-      createdOn: new Date()
+      createdOn: new Date(),
+      type: type.toUpperCase(),
+      link: link ?? "",
+      status: 'STARTED'
     })
     surveyId = result[0]._id;
+    
     // Get the question Id's
     for (let i = 0; i < questions.length; i++) {
       quesIds.push(questions[i].id);
@@ -93,10 +111,12 @@ const createSurveyController = async (req, res) => {
         createdOn: new Date()
       });
     }
-    // Insert the Ids of the question in the survey
+    // Insert the Ids of the question and the generated link in the survey
     var iis = await Survey.updateOne({ _id: surveyId }, { $push: { questions: quesIds } })
     // Insert the survey Id in the surveylist in Projects
     var iip = await Project.updateOne({ _id: projectId }, { $push: { surveysId: surveyId } })
+
+
     return res.status(200).json({ iip, iis, iq });
   } catch (error) {
     console.log(error);

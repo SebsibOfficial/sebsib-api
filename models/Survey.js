@@ -39,7 +39,7 @@ const surveySchema = new mongoose.Schema({
   },
   link: {
     type: String,
-    required: true,
+    default: '',
   },
   status: {
     type: String,
