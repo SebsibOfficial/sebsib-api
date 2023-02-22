@@ -5,6 +5,7 @@ const sanitizeAll = require('../utils/genSantizer');
 const getToken = require('../utils/getToken');
 const inputTranslate = require('../utils/translateIds');
 const { customSurveyIdGenerator, customSurveyLinkGenerator } = require('../utils/surveyGenerators');
+
 const createSurveyController = async (req, res) => {
   /*
  THE INTERFACE FOR THE REQUEST [would be cool if you could only accept this kind of request]
@@ -88,7 +89,7 @@ const createSurveyController = async (req, res) => {
       status: 'STARTED'
     })
     surveyId = result[0]._id;
-    
+
     // Get the question Id's
     for (let i = 0; i < questions.length; i++) {
       quesIds.push(questions[i].id);
@@ -213,6 +214,57 @@ const getSurveyController = async (req, res) => {
       createdOn: survey.createdOn */
     });
 
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
+const getRegularSurveyController = async (req, res) => {
+  const surveyId = sanitizeAll(req.params.id);
+
+  try {
+    var _survey = await Survey.aggregate([
+      {
+        "$match": {
+          "_id": new ObjectId(surveyId)
+        }
+      },
+      {
+        "$lookup": {
+          "from": "questions",
+          "localField": "questions",
+          "foreignField": "_id",
+          "as": "joined_questions",
+        }
+      },
+      {
+        "$lookup": {
+          "from": "responses",
+          "localField": "responses",
+          "foreignField": "_id",
+          "as": "joined_responses",
+        }
+      }
+    ]);
+
+    var survey = _survey[0];
+
+    if (survey.type == null || survey.type == undefined || survey.type.toUpperCase() == 'regular') {
+      return res.status(200).json({
+        _id: survey._id,
+        shortSurveyId: survey.shortSurveyId,
+        name: survey.name,
+        questions: survey.joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }),
+        // no responses will be sent since this endpoint is only used from mobile
+        // responses: survey.joined_responses
+        /*, description: survey.description, 
+        picture: survey.picture, 
+        createdOn: survey.createdOn */
+      });
+    }
+
+    return res.status(400).json({ "message": "Not a regular survey" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
@@ -389,6 +441,7 @@ module.exports = {
   getSurveyListController,
   getRecentResponseController,
   getSurveyController,
+  getRegularSurveyController,
   getResponsesController,
   sendResponseController,
   deleteSurveyController,
