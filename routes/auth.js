@@ -16,19 +16,19 @@ router.post('/login', async (req, res) => {
         bcrypt.compare(password, user.password, async function (err, result) {
           if (result) {
             var org = await Organization.findOne({ _id: user.organizationId });
-            if (org != null && (user.roleId == '623cc24a8b7ab06011bd1e60' || user.roleId == '6362ad70297414bfb79bdf01')) {
+            if (org != null && (user.roleId == '623cc24a8b7ab06011bd1e60' || user.roleId == '6362ad70297414bfb79bdf01' || user.roleId == '641ddc0c56452891a460db69')) {
               const token = jwt.sign({ _id: user._id, role: user.roleId, org: org._id, org_name: org.name, email: user.email, shortOrgId: org.orgId, pkgId: org.packageId }, process.env.TOKEN_SECRET, { expiresIn: '1d' });
               var package = await verifyPackage(token, '');
-              if (package == 'expired') return res.status(401).json({message: "Package has Expired!"})
+              if (package == 'expired') return res.status(401).json({ message: "Package has Expired!" })
               user.password = "*";
-              return res.status(200).json({token: token, user: user, orgId: org});
-            } else return res.status(401).json({message: "Wrong credentials"})
-          } else return res.status(401).json({message: "Wrong credentials"})
+              return res.status(200).json({ token: token, user: user, orgId: org });
+            } else return res.status(401).json({ message: "Wrong credentials" })
+          } else return res.status(401).json({ message: "Wrong credentials" })
         });
-      } else return res.status(401).json({message: "Wrong credentials"})
+      } else return res.status(401).json({ message: "Wrong credentials" })
     } catch (error) { console.log(error); return res.status(500).send("Server Error") }
   } else {
-    return res.status(400).json({message: "Bad Input"})
+    return res.status(400).json({ message: "Bad Input" })
   }
 })
 
@@ -45,17 +45,17 @@ router.post('/fillsettings', async (req, res) => {
   if (email != undefined && password != undefined && validator.isEmail(email)) {
     try {
       const user = await User.findOne({ email: email, organizationid: org_id });
-      if (user != null && ( user.roleId == '623cc24a8b7ab06011bd1e5f' || user.roleId == '623cc24a8b7ab06011bd1e60' )) {
+      if (user != null && (user.roleId == '623cc24a8b7ab06011bd1e5f' || user.roleId == '623cc24a8b7ab06011bd1e60')) {
         bcrypt.compare(password, user.password, function (err, result) {
           if (result) {
-            const token = jwt.sign({_id: user._id, role: user.roleId, org: org_id, email: user.email, shortOrgId: org_obj.orgId, firstName: user.firstName, lastName: user.lastName }, process.env.TOKEN_SECRET);
-            return res.status(200).json({token: token});
-          } else return res.status(401).json({message: "Wrong credentials"})
+            const token = jwt.sign({ _id: user._id, role: user.roleId, org: org_id, email: user.email, shortOrgId: org_obj.orgId, firstName: user.firstName, lastName: user.lastName }, process.env.TOKEN_SECRET);
+            return res.status(200).json({ token: token });
+          } else return res.status(401).json({ message: "Wrong credentials" })
         });
-      } else return res.status(401).json({message: "Wrong credentials"})
+      } else return res.status(401).json({ message: "Wrong credentials" })
     } catch (error) { console.log(error); return res.status(500).send("Server Error") }
-  } else 
-    return res.status(400).json({message: "Bad Input"})
+  } else
+    return res.status(400).json({ message: "Bad Input" })
 })
 
 router.post('/adminlogin', async (req, res) => {
