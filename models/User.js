@@ -51,7 +51,11 @@ const userSchema = new mongoose.Schema({
   createdOn: {
     type: Date,
     default: Date.now
-  }
+  },
+  toView: {
+    type: mongoose.Types.ObjectId,
+    required: false,
+  },
 })
 
 module.exports = mongoose.model('User', userSchema);

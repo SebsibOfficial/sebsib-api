@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const showIfSchema = new mongoose.Schema({
+const showSchema = new mongoose.Schema({
   questionId: {
     type: mongoose.Types.ObjectId,
     required: true,
@@ -11,7 +11,6 @@ const showIfSchema = new mongoose.Schema({
   },
   responseId: {
     type: mongoose.Types.ObjectId,
-    required: false,
   },
 })
 
@@ -19,17 +18,6 @@ const choiceSchema = new mongoose.Schema({
   _id: {
     type: mongoose.Types.ObjectId,
     required: true,
-  },
-  text: {
-    type: String,
-    required: true
-  },
-})
-
-const questionTextSchema = new mongoose.Schema({
-  langId: {
-    type: String,
-    required: true
   },
   text: {
     type: String,
@@ -46,13 +34,17 @@ const questionSchema = new mongoose.Schema({
     type: Boolean,
     required: true
   },
-  ptrnCount: {
+  showIf: {
+    type: showSchema,
+    required: function () {
+      return typeof this.showIf === 'undefined' || (this.showIf != null && typeof this.showIf != 'object')
+    }
+  },
+  options: [choiceSchema],
+  questionText: {
     type: String,
     required: true
   },
-  showIf: [showIfSchema],
-  options: [choiceSchema],
-  questionText: [questionTextSchema],
   inputType: {
     type: mongoose.Types.ObjectId,
     required: true,
@@ -65,18 +57,10 @@ const questionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  exp_min: {
-    type: Number,
-    required: false
-  },
-  exp_max: {
-    type: Number,
-    required: false
-  },
   number: {
     type: Number,
     required: true,
   },
 })
 
-module.exports = mongoose.model('question', questionSchema)
+module.exports = mongoose.model('online-questions', questionSchema)

@@ -3,6 +3,7 @@ const Organization = require('./Organization');
 const Package = require('./Package');
 const Project = require('./Project');
 const Question = require('./Question');
+const OnlineQuestion = require('./OnlineQuestion');
 const Response = require('./Response');
 const Role = require('./Role');
 const Survey = require('./Survey');
@@ -15,6 +16,7 @@ module.exports = {
   Package,
   Project,
   Question,
+  OnlineQuestion,
   Response,
   Role,
   Survey,
