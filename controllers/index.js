@@ -9,8 +9,10 @@ const {
 } = require('../controllers/membercontrollers');
 
 const {
-  getSurveyListController,
+  getSurveyListFromProjectIdController,
+  getSurveyListFromOrgIdController,
   createSurveyController,
+  createOnlineSurveyController,
   getRecentResponseController,
   getSurveyController,
   getRegularSurveyController,
@@ -18,6 +20,10 @@ const {
   deleteSurveyController,
   getResponsesController,
   syncSurveysController,
+  getSurveyQuestionsController,
+  editSurveyController,
+  getSurveyListFromUserIdController,
+  editOnlineSurveyController
 } = require('../controllers/surveycontrollers');
 
 const {
@@ -54,7 +60,6 @@ const {
 module.exports = {
   getMemberListController,
   createMemberController,
-  getSurveyListController,
   createSurveyController,
   getProjectListController,
   createProjectController,
@@ -90,4 +95,11 @@ module.exports = {
   deleteAccountController,
   deleteAdminController,
   syncSurveysController,
+  getSurveyListFromProjectIdController,
+  getSurveyListFromOrgIdController,
+  createOnlineSurveyController,
+  getSurveyQuestionsController,
+  editSurveyController,
+  getSurveyListFromUserIdController,
+  editOnlineSurveyController,
 }
