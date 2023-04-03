@@ -210,8 +210,8 @@ const resetPasswordController = async (req, res, next) => {
 
     if (user == null) return res.status(403).json({ message: "Email not found" })
 
-    // check if user is OWNER OR ANALYST
-    if (user == null || user.roleId != '623cc24a8b7ab06011bd1e60' || user.roleId != '6362ad70297414bfb79bdf01')
+    // check if user is OWNER, VIEWER OR ANALYST
+    if (user == null || user.roleId != '623cc24a8b7ab06011bd1e60' || user.roleId != '6362ad70297414bfb79bdf01' || user.roleId != '641ddc0c56452891a460db69')
       return res.status(403).json({ message: "Wrong Credentials" })
 
     // Generate Password
