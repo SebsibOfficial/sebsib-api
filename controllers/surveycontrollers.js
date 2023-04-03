@@ -284,7 +284,48 @@ const getSurveyListFromUserIdController = async (req, res) => {
 const getResponsesController = async (req, res) => {
   const surveyId = sanitizeAll(req.params.surveyId);
   try {
-    return res.status(200).json({ questions: survey[0].joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }), responses: survey[0].joined_responses });
+    const survey = await Survey.aggregate([
+      {
+        "$match": {
+          "_id": new ObjectId(surveyId)
+        }
+      },
+      {
+        "$lookup": {
+          "from": "questions",
+          "localField": "questions",
+          "foreignField": "_id",
+          "as": "joined_questions"
+        }
+      },
+      {
+        "$lookup": {
+          "from": "responses",
+          "localField": "responses",
+          "foreignField": "_id",
+          "as": "joined_responses"
+        }
+      }
+    ]);
+
+    var questions = survey[0].joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; })
+    var responses = survey[0].joined_responses
+
+    for (let i = 0; i < questions.length; i++) {
+      var q = questions[i];
+
+      if (typeof q.questionText == 'object') {
+        // loop through the questionText object and remove other languages other than the ones with langId of 'en'
+        for (let j = 0; j < q.questionText.length; j++) {
+          const question = q.questionText[j];
+          if (question.langId != 'en') {
+            q.questionText.splice(j, 1);
+          }
+        }
+      }
+    }
+
+    return res.status(200).json({ questions: questions, responses: responses });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
