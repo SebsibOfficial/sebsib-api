@@ -1,4 +1,4 @@
-const { User, Project } = require("../models");
+const { User, Project, Survey } = require("../models");
 const validator = require("validator");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -22,7 +22,7 @@ const getMemberListController = async (req, res, next) => {
 }
 
 const createMemberController = async (req, res, next) => {
-  var {email, password, phone, role, firstname, lastname, projectsId} = req.body;
+  var {email, password, phone, role, firstname, lastname, projectsId, surveysToView} = req.body;
   // Required fields must not be undefined
   if (email === undefined || password === undefined || projectsId === undefined || role === undefined) return res.status(400).json({message: 'Bad Input'});
   // Remove undefined types
@@ -53,6 +53,12 @@ const createMemberController = async (req, res, next) => {
         return res.status(400).json({message: 'Project doesn\'t Exist'});
       }
     }
+    // Check if surveyId exist
+    for (var i = 0; i < surveysToView.length; i++) {
+      if(await Survey.exists({_id: surveysToView[i]}) == null){
+        return res.status(400).json({message: 'Survey doesn\'t Exist'});
+      }
+    }
     // Create Member
     var result = await User.insertMany([{
       _id: new ObjectId(),
@@ -65,8 +71,11 @@ const createMemberController = async (req, res, next) => {
       lastName: lastname, 
       password: hash,
       pic: '',
+      hasPassChange: false,
+      toView: surveysToView,
       createdOn: new Date()
     }]);
+
     result[0].password = '*';
     return res.status(200).send(result);
   } catch (error) {
