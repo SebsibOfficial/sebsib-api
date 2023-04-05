@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   },
   toView: {
-    type: mongoose.Types.ObjectId,
+    type: [mongoose.Types.ObjectId],
     required: false,
   },
 })
