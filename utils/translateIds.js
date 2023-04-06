@@ -1,7 +1,7 @@
 var TYPES = require('./id-text.json');
 
 module.exports = (from, inp) => {
-  if (from == 'id') {
+  if (from == 'id' || from == "ID") {
     for (let index = 0; index < TYPES.length; index++) {
       const element = TYPES[index];
       if (element._id == inp){
