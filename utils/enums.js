@@ -4,7 +4,8 @@ module.exports = {
     MEMBER: "MEMBER",
     SUPER_ADMIN: "SUPER_ADMIN",
     OWNER: "OWNER",
-    ANALYST: "ANALYST"
+    ANALYST: "ANALYST",
+    VIEWER: "VIEWER"
   },
   PACKAGES:{
     FREE_TRIAL: "FREE TRIAL",
