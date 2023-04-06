@@ -5,6 +5,7 @@ const sanitizeAll = require('../utils/genSantizer');
 const getToken = require('../utils/getToken');
 const inputTranslate = require('../utils/translateIds');
 const { customSurveyIdGenerator, customSurveyLinkGenerator } = require('../utils/surveyGenerators');
+const translateIds = require('../utils/translateIds');
 
 const createSurveyController = async (req, res) => {
   var projectId = sanitizeAll(req.params.projectId);
@@ -253,25 +254,17 @@ const getSurveyListFromUserIdController = async (req, res) => {
   try {
     var user = await User.findOne({ _id: new ObjectId(userId) });
     if (!user) return res.status(403).json({ message: "User does not exist" });
-
-    var projects = user.projectsId;
-
-    // loop through projects and get surveys, then push only the name and id of the survey, not the entire survey object
+    if (translateIds("ID", user.roleId) != "VIEWER") return res.status(403).json({ message: "User is not a Viewer" });
+    
+    var surveys = await Survey.find({_id: { $in : user.toView } });
     var surveyObjects = [];
-    for (let i = 0; i < projects.length; i++) {
-      const project = projects[i];
-      var surveys = await Project.aggregate([
-        { $match: { _id: new ObjectId(project) } },
-        { $lookup: { from: 'surveys', localField: 'surveysId', foreignField: '_id', as: 'survey_docs' } }
-      ]);
 
-      surveys[0].survey_docs.forEach(survey => {
-        surveyObjects.push({
-          name: survey.name,
-          id: survey._id
-        });
+    surveys.forEach(survey => {
+      surveyObjects.push({
+        name: survey.name,
+        _id: survey._id
       });
-    }
+    });
 
     return res.status(200).json(surveyObjects);
 
