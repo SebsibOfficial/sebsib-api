@@ -149,6 +149,7 @@ const changePasswordController = async (req, res, next) => {
     // Get user details
     const user = await User.findOne({ _id: userId });
     if (user != null) {
+      // First time mandatory changing password,
       if (initialpass == null) {
         // Check password confirmation
         if (newpass === confirmpass) {
@@ -160,7 +161,7 @@ const changePasswordController = async (req, res, next) => {
             password: hash,
             hasPassChange: true
           })
-          return res.status(200).json({ message: 'Completed' })
+          return res.status(200).json(user)
         }
         else return res.status(403).json({ message: "Input Mismatch" })
       }
@@ -177,7 +178,7 @@ const changePasswordController = async (req, res, next) => {
               password: hash,
               hasPassChange: true
             })
-            return res.status(200).json({ message: 'Completed' })
+            return res.status(200).json(user)
           }
           else return res.status(403).json({ message: "Input Mismatch" })
         }
