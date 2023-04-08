@@ -747,6 +747,22 @@ const editOnlineSurveyController = async (req, res) => {
   }
 }
 
+const updateSurveyStatus = async (req, res) => {
+  var surveyId = sanitizeAll(req.params.id);
+  var statusFromReq = sanitizeAll(req.params.status);
+
+  try {
+    var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
+    if (!survey) return res.status(403).json({ message: "Survey does not exist" });
+
+    var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {$set: {status: statusFromReq}})
+
+    return res.status(200).json({ updatedSurvey });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
 
 module.exports = {
   createSurveyController,
@@ -764,4 +780,5 @@ module.exports = {
   getSurveyListFromUserIdController,
   editSurveyController,
   editOnlineSurveyController,
+  updateSurveyStatus
 }
