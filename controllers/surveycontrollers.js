@@ -84,16 +84,16 @@ const createSurveyController = async (req, res) => {
 
     // Get the question Id's and insert the questions
     for (let i = 0; i < questions.length; i++) {
-      quesIds.push(questions[i].id);
+      quesIds.push(questions[i]._id);
 
       var question = questions[i];
       var iq = await Question.insertMany({
-        _id: new ObjectId(question.id),
-        hasShowPattern: question.hasShow,
-        ptrnCount: question.patternCount,
+        _id: new ObjectId(question._id),
+        hasShowPattern: question.hasShowPattern,
+        ptrnCount: question.ptrnCount,
         showIf: question.showIf,
-        options: question.choices,
-        questionText: question.question,
+        options: question.options,
+        questionText: question.questionText,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
         mandatory: question.mandatory,
         createdOn: new Date(),
