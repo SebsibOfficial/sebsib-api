@@ -8,25 +8,10 @@ const showIfSchema = new mongoose.Schema({
   answerId: {
     type: mongoose.Types.ObjectId,
     required: true,
-  },
-  responseId: {
-    type: mongoose.Types.ObjectId,
-    required: false,
-  },
+  }
 })
 
-const choiceSchema = new mongoose.Schema({
-  _id: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-  },
-  text: {
-    type: String,
-    required: true
-  },
-})
-
-const questionTextSchema = new mongoose.Schema({
+const langSchema = new mongoose.Schema({
   langId: {
     type: String,
     required: true
@@ -35,6 +20,14 @@ const questionTextSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+}, { _id : false })
+
+const choiceSchema = new mongoose.Schema({
+  _id: {
+    type: mongoose.Types.ObjectId,
+    required: true,
+  },
+  text: [langSchema],
 })
 
 const questionSchema = new mongoose.Schema({
@@ -52,7 +45,7 @@ const questionSchema = new mongoose.Schema({
   },
   showIf: [showIfSchema],
   options: [choiceSchema],
-  questionText: [questionTextSchema],
+  questionText: [langSchema],
   inputType: {
     type: mongoose.Types.ObjectId,
     required: true,
