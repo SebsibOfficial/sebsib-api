@@ -309,14 +309,31 @@ const getResponsesController = async (req, res) => {
       var q = questions[i];
 
       if (typeof q.questionText == 'object') {
-        // loop through the questionText object and remove other languages other than the ones with langId of 'en'
+        // loop through the question array inside the question and transform the format to a plain, single language by keeping only `en`
         for (let j = 0; j < q.questionText.length; j++) {
           const question = q.questionText[j];
-          if (question.langId != 'en') {
-            q.questionText.splice(j, 1);
+          if (question.langId == 'en') {
+            q.questionText = question.text;
           }
         }
       }
+      
+      // loop through the options array inside the question and transform the format to a plain, single language by keeping only `en`
+      var options_arr = [];
+      for (let j = 0; j < q.options.length; j++) {
+        const option = q.options[j];
+        for (let i = 0; i < option.text.length; i++) {
+          const Chlang = option.text[i];
+          if (Chlang.langId == 'en') {
+            options_arr.push({
+              _id: option._id,
+              text: Chlang.text
+            })
+          }
+        }        
+      }
+      q.options = options_arr;
+
     }
 
     return res.status(200).json({ questions: questions, responses: responses });
