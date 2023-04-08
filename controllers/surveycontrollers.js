@@ -117,9 +117,9 @@ const createSurveyController = async (req, res) => {
 const createOnlineSurveyController = async (req, res) => {
   var projectId = sanitizeAll(req.params.projectId);
   var quesIds = []; var surveyId;
-  var { surveyName, description, questions } = req.body;
+  var { surveyName, filePath, surveyDesc, questions } = req.body;
   surveyName = sanitizeAll(surveyName);
-  description = sanitizeAll(description);
+  surveyDesc = sanitizeAll(surveyDesc);
 
   // Check package if number of questions is allowed
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
@@ -156,15 +156,15 @@ const createOnlineSurveyController = async (req, res) => {
       name: surveyName,
       questions: [],
       responses: [],
-      description: '',
-      pic: '',
+      description: surveyDesc,
+      pic: filePath,
       createdOn: new Date(),
       type: 'ONLINE',
       link: link ?? "",
       status: 'STARTED'
     })
     surveyId = result[0]._id;
-
+    var surveyObject = result;
     // Get the question Id's
     for (let i = 0; i < questions.length; i++) {
       quesIds.push(questions[i].id);
@@ -192,7 +192,7 @@ const createOnlineSurveyController = async (req, res) => {
     var iip = await Project.updateOne({ _id: projectId }, { $push: { surveysId: surveyId } })
 
 
-    return res.status(200).json({ iip, iis, iq });
+    return res.status(200).json({ iip, iis, iq, surveyObject });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error!" });
@@ -277,6 +277,7 @@ const getSurveyListFromUserIdController = async (req, res) => {
 const getResponsesController = async (req, res) => {
   const surveyId = sanitizeAll(req.params.surveyId);
   try {
+    const survey_type_check = await Survey.findOne({_id: surveyId});
     const survey = await Survey.aggregate([
       {
         "$match": {
@@ -285,7 +286,7 @@ const getResponsesController = async (req, res) => {
       },
       {
         "$lookup": {
-          "from": "questions",
+          "from": survey_type_check.type == "REGULAR" ? "questions" : "online-questions",
           "localField": "questions",
           "foreignField": "_id",
           "as": "joined_questions"
@@ -482,7 +483,8 @@ const getRecentResponseController = async (req, res, next) => {
     ]).sort({ sentDate: -1 });
 
     for (let index = 0; index < _responses.length; index++) {
-      _responses[index].enum_obj[0].password = "*";
+      if (_responses[index].enum_obj[0] !== undefined)
+        _responses[index].enum_obj[0].password = "*";
     }
 
     return res.status(200).json({ resp: _responses, proj: all_projects });
@@ -595,6 +597,7 @@ const getSurveyQuestionsController = async (req, res) => {
   const surveyId = sanitizeAll(req.params.id);
 
   try {
+    const survey_type_check = await Survey.findOne({_id: surveyId});
     var _survey = await Survey.aggregate([
       {
         "$match": {
@@ -603,7 +606,7 @@ const getSurveyQuestionsController = async (req, res) => {
       },
       {
         "$lookup": {
-          "from": "questions",
+          "from": survey_type_check.type == "REGULAR" ? "questions" : "online-questions",
           "localField": "questions",
           "foreignField": "_id",
           "as": "joined_questions",
@@ -621,7 +624,7 @@ const getSurveyQuestionsController = async (req, res) => {
       link: survey.link,
       status: survey.status,
       description: survey.description,
-      picture: survey.picture,
+      picture: survey.pic,
       createdOn: survey.createdOn,
     });
 
