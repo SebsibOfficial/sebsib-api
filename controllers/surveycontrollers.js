@@ -653,7 +653,7 @@ const getSurveyQuestionsController = async (req, res) => {
 
 const editSurveyController = async (req, res) => {
   var surveyId = sanitizeAll(req.params.id);
-  var { shortSurveyId, name, questions, description, pic, createdOn, type, link, status } = req.body;
+  var {surveyName, questions, description} = req.body;
 
   try {
     var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
@@ -666,36 +666,29 @@ const editSurveyController = async (req, res) => {
 
       const question = questions[index];
 
-      await Question.updateOne({ _id: new ObjectId(question.id) }, {
+      await Question.updateOne({ _id: new ObjectId(question._id) }, {
         $set: {
           hasShowPattern: question.hasShowPattern,
           ptrnCount: question.ptrnCount,
           showIf: question.showIf,
           options: question.options,
-          questionText: question.question,
+          questionText: question.questionText,
           inputType: new ObjectId(inputTranslate('name', question.inputType)),
           mandatory: question.mandatory,
-          createdOn: question.createdOn,
           exp_min: question.exp_min,
           exp_max: question.exp_max,
           number: question.number,
         }
-      });
+      }, {upsert: true});
 
-      updatedQuestions.push(question.id);
+      updatedQuestions.push(question._id);
     }
 
     var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {
       $set: {
-        shortSurveyId: shortSurveyId,
-        name: name,
+        name: surveyName,
         questions: updatedQuestions,
         description: description,
-        pic: pic,
-        createdOn: createdOn,
-        type: type,
-        link: link,
-        status: status,
       }
     });
 
