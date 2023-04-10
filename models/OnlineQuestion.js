@@ -8,10 +8,7 @@ const showSchema = new mongoose.Schema({
   answerId: {
     type: mongoose.Types.ObjectId,
     required: true,
-  },
-  responseId: {
-    type: mongoose.Types.ObjectId,
-  },
+  }
 })
 
 const choiceSchema = new mongoose.Schema({
