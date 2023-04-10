@@ -172,14 +172,14 @@ const createOnlineSurveyController = async (req, res) => {
       var question = questions[i];
 
       var iq = await OnlineQuestion.insertMany({
-        _id: new ObjectId(question.id),
+        _id: new ObjectId(question._id),
         hasShowPattern: question.showPattern.hasShow,
         showIf: question.showPattern.hasShow ? {
           questionId: question.showPattern.showIfQues,
           answerId: question.showPattern.ansIs
         } : null,
         options: question.choices,
-        questionText: question.question,
+        questionText: question.questionText,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
         mandatory: question.mandatory,
         createdOn: new Date(),
