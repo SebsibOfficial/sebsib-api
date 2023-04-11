@@ -164,7 +164,7 @@ const createOnlineSurveyController = async (req, res) => {
       status: 'STARTED'
     })
     surveyId = result[0]._id;
-    var surveyObject = result;
+    var surveyObject = result[0];
     // Get the question Id's
     for (let i = 0; i < questions.length; i++) {
       quesIds.push(questions[i]._id);
@@ -192,7 +192,7 @@ const createOnlineSurveyController = async (req, res) => {
     var iip = await Project.updateOne({ _id: projectId }, { $push: { surveysId: surveyId } })
 
 
-    return res.status(200).json({ iip, iis, iq, surveyObject });
+    return res.status(200).json(surveyObject);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error!" });
