@@ -703,7 +703,7 @@ const editSurveyController = async (req, res) => {
 
 const editOnlineSurveyController = async (req, res) => {
   var surveyId = sanitizeAll(req.params.id);
-  var { shortSurveyId, name, questions, description, pic, createdOn, type, link, status } = req.body;
+  var { surveyName, questions, description, filePath } = req.body;
 
   try {
     var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
@@ -716,7 +716,7 @@ const editOnlineSurveyController = async (req, res) => {
 
       const question = questions[index];
 
-      await OnlineQuestion.updateOne({ _id: new ObjectId(question.id) }, {
+      await OnlineQuestion.updateOne({ _id: new ObjectId(question._id) }, {
         $set: {
           hasShowPattern: question.showPattern.hasShow,
           showIf: question.showPattern.hasShow ? {
@@ -724,28 +724,23 @@ const editOnlineSurveyController = async (req, res) => {
             answerId: question.showPattern.ansIs
           } : null,
           options: question.choices,
-          questionText: question.question,
+          questionText: question.questionText,
           inputType: new ObjectId(inputTranslate('name', question.inputType)),
           mandatory: question.mandatory,
           createdOn: new Date(),
           number: question.number,
         }
-      });
+      }, {upsert: true});
 
-      updatedQuestions.push(question.id);
+      updatedQuestions.push(question._id);
     }
 
     var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {
       $set: {
-        shortSurveyId: shortSurveyId,
-        name: name,
+        name: surveyName,
         questions: updatedQuestions,
         description: description,
-        pic: pic,
-        createdOn: createdOn,
-        type: type,
-        link: link,
-        status: status,
+        pic: filePath,
       }
     });
 
