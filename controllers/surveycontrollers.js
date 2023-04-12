@@ -319,20 +319,22 @@ const getResponsesController = async (req, res) => {
       }
       
       // loop through the options array inside the question and transform the format to a plain, single language by keeping only `en`
-      var options_arr = [];
-      for (let j = 0; j < q.options.length; j++) {
-        const option = q.options[j];
-        for (let i = 0; i < option.text.length; i++) {
-          const Chlang = option.text[i];
-          if (Chlang.langId == 'en') {
-            options_arr.push({
-              _id: option._id,
-              text: Chlang.text
-            })
-          }
-        }        
+      if (survey_type_check.type == "REGULAR"){
+        var options_arr = [];
+        for (let j = 0; j < q.options.length; j++) {
+          const option = q.options[j];
+          for (let i = 0; i < option.text.length; i++) {
+            const Chlang = option.text[i];
+            if (Chlang.langId == 'en') {
+              options_arr.push({
+                _id: option._id,
+                text: Chlang.text
+              })
+            }
+          }        
+        }
+        q.options = options_arr;
       }
-      q.options = options_arr;
 
     }
 
@@ -715,7 +717,6 @@ const editOnlineSurveyController = async (req, res) => {
     for (let index = 0; index < questions.length; index++) {
 
       const question = questions[index];
-
       await OnlineQuestion.updateOne({ _id: new ObjectId(question._id) }, {
         $set: {
           hasShowPattern: question.showPattern.hasShow,
@@ -723,7 +724,7 @@ const editOnlineSurveyController = async (req, res) => {
             questionId: question.showPattern.showIfQues,
             answerId: question.showPattern.ansIs
           } : null,
-          options: question.choices,
+          options: question.options,
           questionText: question.questionText,
           inputType: new ObjectId(inputTranslate('name', question.inputType)),
           mandatory: question.mandatory,
