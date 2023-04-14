@@ -24,7 +24,8 @@ const {
   editSurveyController,
   getSurveyListFromUserIdController,
   editOnlineSurveyController,
-  updateSurveyStatus
+  updateSurveyStatus,
+  setOnlineSurveyPicController
 } = require('../controllers/surveycontrollers');
 
 const {
@@ -103,5 +104,6 @@ module.exports = {
   editSurveyController,
   getSurveyListFromUserIdController,
   editOnlineSurveyController,
-  updateSurveyStatus
+  updateSurveyStatus,
+  setOnlineSurveyPicController
 }

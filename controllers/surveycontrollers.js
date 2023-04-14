@@ -736,17 +736,45 @@ const editOnlineSurveyController = async (req, res) => {
       updatedQuestions.push(question._id);
     }
 
-    var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {
+    if (filePath == "") {
+      var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {
+        $set: {
+          name: surveyName,
+          questions: updatedQuestions,
+          description: description
+        }
+      });
+    } 
+    else {
+      var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {
+        $set: {
+          name: surveyName,
+          questions: updatedQuestions,
+          description: description,
+          pic: filePath,
+        }
+      });
+    }
+
+    return res.status(200).json(survey);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
+const setOnlineSurveyPicController = async (req, res) => {
+  var shortSurveyId = sanitizeAll(req.params.shId);
+  var path = sanitizeAll(req.body.pic);
+
+  try {
+    var result = await Survey.updateOne({shortSurveyId: shortSurveyId}, {
       $set: {
-        name: surveyName,
-        questions: updatedQuestions,
-        description: description,
-        pic: filePath,
+        pic: path
       }
-    });
-
-    return res.status(200).json({ ip: updatedSurvey });
-
+    })
+    return res.status(200).json(result);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
@@ -786,5 +814,6 @@ module.exports = {
   getSurveyListFromUserIdController,
   editSurveyController,
   editOnlineSurveyController,
-  updateSurveyStatus
+  updateSurveyStatus,
+  setOnlineSurveyPicController
 }

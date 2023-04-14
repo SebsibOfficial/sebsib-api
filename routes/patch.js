@@ -8,7 +8,8 @@ const {
   changePasswordController,
   editSurveyController,
   editOnlineSurveyController,
-  updateSurveyStatus
+  updateSurveyStatus,
+  setOnlineSurveyPicController
 } = require('../controllers');
 
 router.patch('/editsettings/:orgId', accessControl(3), editSettingsController);
@@ -18,6 +19,7 @@ router.patch('/removemember/:pid/:id',accessControl(4), removeMemberController);
 router.patch('/changepass',accessControl(7), changePasswordController);
 router.patch('/editsurvey/:id',accessControl(4), editSurveyController);
 router.patch('/editonlinesurvey/:id',accessControl(4), editOnlineSurveyController);
+router.patch('/setonlinesurveypic/:shId',accessControl(4), setOnlineSurveyPicController);
 router.patch('/upadatestatus/:status/:id',accessControl(4), updateSurveyStatus);
 
 module.exports = router;
