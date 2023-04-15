@@ -117,9 +117,9 @@ const createSurveyController = async (req, res) => {
 const createOnlineSurveyController = async (req, res) => {
   var projectId = sanitizeAll(req.params.projectId);
   var quesIds = []; var surveyId;
-  var { surveyName, filePath, surveyDesc, questions } = req.body;
+  var { surveyName, filePath, description, questions } = req.body;
   surveyName = sanitizeAll(surveyName);
-  surveyDesc = sanitizeAll(surveyDesc);
+  description = sanitizeAll(description);
 
   // Check package if number of questions is allowed
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
@@ -156,7 +156,7 @@ const createOnlineSurveyController = async (req, res) => {
       name: surveyName,
       questions: [],
       responses: [],
-      description: surveyDesc,
+      description: description,
       pic: filePath,
       createdOn: new Date(),
       type: 'ONLINE',
@@ -178,7 +178,7 @@ const createOnlineSurveyController = async (req, res) => {
           questionId: question.showPattern.showIfQues,
           answerId: question.showPattern.ansIs
         } : null,
-        options: question.choices,
+        options: question.options,
         questionText: question.questionText,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
         mandatory: question.mandatory,
