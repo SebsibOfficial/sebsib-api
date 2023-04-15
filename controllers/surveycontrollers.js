@@ -384,8 +384,8 @@ const getSurveyController = async (req, res) => {
       type: survey.type,
       link: survey.link,
       status: survey.status,
-      /*, description: survey.description, 
-      picture: survey.picture, 
+      description: survey.description, 
+      /* picture: survey.picture, 
       createdOn: survey.createdOn */
     });
 

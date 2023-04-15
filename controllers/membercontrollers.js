@@ -98,9 +98,10 @@ const getMemberController = async (req, res, next) => {
 }
 
 const editMemberController = async (req, res, next) => {
-  var {email, password, phone, firstname, lastname, projectsId} = req.body;
+  var {email, password, phone, firstname, lastname, projectsId, surveysToView} = req.body;
   var userId = sanitizeAll(req.params.id);
-  email = sanitizeAll(email); firstname = sanitizeAll(firstname); lastname = sanitizeAll(lastname); phone = sanitizeAll(phone); projectsId = sanitizeAll(projectsId);
+  email = sanitizeAll(email); firstname = sanitizeAll(firstname); lastname = sanitizeAll(lastname); 
+  phone = sanitizeAll(phone); projectsId = sanitizeAll(projectsId); surveysToView = sanitizeAll(surveysToView);
   
   try {
     // Check if string is an email
@@ -114,8 +115,6 @@ const editMemberController = async (req, res, next) => {
     const user = await User.findOne({_id: userId});
     // Check if the user to-be edited exists 
     if (user == null) return res.status(404).json({message: 'User doesn\'t exist'});
-    // Check if to-be edited user is a member
-    if (user.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
     // Encrypt password
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(password, salt);
@@ -133,7 +132,8 @@ const editMemberController = async (req, res, next) => {
         email: email,
         firstName: firstname,
         lastName: lastname,
-        phone: phone
+        phone: phone,
+        toView: surveysToView
       });
     } else {
       var result = await User.updateOne({_id: userId},{
@@ -143,6 +143,7 @@ const editMemberController = async (req, res, next) => {
         lastName: lastname,
         phone: phone,
         password: hash,
+        toView: surveysToView
       });
     }
     return res.status(200).send(result);
@@ -159,7 +160,7 @@ const deleteMemberController = async (req, res, next) => {
     // Check if the user to-be deleted exists 
     if (user == null) return res.status(404).json({message: 'User doesn\'t exist'});
     // Check if to-be deleted user is a member
-    if (user.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
+    if (user.roleId == '623cc24a8b7ab06011bd1e60') return res.status(401).json({message: "User is not removable"});
     // Remove from User collection
     const result = await User.findOneAndDelete({_id: id});
     return res.status(200).json(result);
@@ -177,11 +178,6 @@ const addMemberController = async (req, res) => {
     const project = await Project.findOne({_id: projectId});
     // Check if the member to-be added exists 
     if (users.length == 0 || project == null) return res.status(404).json({message: 'User or Project doesn\'t exist: '});
-    // Check if to-be added user is a member
-    for (let index = 0; index < users.length; index++) {
-      const element = users[index];
-      if (element.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
-    }
     // Check if member is already in the project
     for (let index = 0; index < users.length; index++) {
       const element = users[index];
@@ -204,8 +200,6 @@ const removeMemberController = async (req, res) => {
     const project = await Project.findOne({_id: projectId});
     // Check if the member to-be removed exists 
     if (user == null || project == null) return res.status(404).json({message: 'User or Project doesn\'t exist'});
-    // Check if to-be removed user is a member
-    if (user.roleId != '623cc24a8b7ab06011bd1e5f') return res.status(401).json({message: "User not a member"});
     // Check if member is already in the project
     if (!user.projectsId.includes(projectId)) return res.status(401).json({message: "User not in the project"});
     // Remove the project id in the member

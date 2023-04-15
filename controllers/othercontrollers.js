@@ -52,7 +52,7 @@ const sendRequestController = async (req, res, next) => {
 
       // Alert me
       sendEmail('PLAIN', { from: RGreqObj.firstname + ' ' + RGreqObj.lastname }, 'yoseph@sebsib.com')
-
+      sendEmail('PLAIN', { from: RGreqObj.firstname + ' ' + RGreqObj.lastname }, 'yosephten@gmail.com')
       return res.status(200).json(result[0])
     }
     else if (type == 'RENEWAL') {
