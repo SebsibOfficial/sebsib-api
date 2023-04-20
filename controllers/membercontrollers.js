@@ -143,7 +143,8 @@ const editMemberController = async (req, res, next) => {
         lastName: lastname,
         phone: phone,
         password: hash,
-        toView: surveysToView
+        toView: surveysToView,
+        hasPassChange: false
       });
     }
     return res.status(200).send(result);
