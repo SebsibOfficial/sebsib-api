@@ -10,6 +10,7 @@ module.exports = {
   PACKAGES:{
     FREE_TRIAL: "FREE TRIAL",
     STANDARD: "STANDARD",
+    PREMIUM: "PREMIUM",
     UNLIMITED: "UNLIMITED"
   },
   CHECK:{

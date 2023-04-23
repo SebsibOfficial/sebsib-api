@@ -22,18 +22,11 @@ const sendRequestController = async (req, res, next) => {
       for (var key in RGreqObj) {
         RGreqObj[key] = sanitizeAll(RGreqObj[key])
       }
-      // Check values
-      for (var key in RGreqObj) {
-        if ((RGreqObj[key] == null || RGreqObj[key] == "") && key != 'bank' && key != 'transno' && key != 'subType') {
-          return res.status(403).json({ message: 'Feilds missing' });
-        }
-      }
-      if (![enums.PACKAGES.FREE_TRIAL, enums.PACKAGES.STANDARD].includes(RGreqObj.pkg)) {
+
+      if (![enums.PACKAGES.FREE_TRIAL, enums.PACKAGES.PREMIUM].includes(RGreqObj.pkg)) {
         return res.status(403).json({ message: 'Package not found' });
       }
-      // Check bank details
-      if (RGreqObj.pkg != enums.PACKAGES.FREE_TRIAL && (RGreqObj.bank == null || RGreqObj.transno == null))
-        return res.status(403).json({ message: 'Bank details missing' });
+
       // Add to DB
       var result = await Request.insertMany([{
         _id: new ObjectId(),
@@ -63,13 +56,8 @@ const sendRequestController = async (req, res, next) => {
       for (var key in RNreqObj) {
         RNreqObj[key] = sanitizeAll(RNreqObj[key])
       }
-      // Check values
-      for (var key in RNreqObj) {
-        if ((RNreqObj[key] == null || RNreqObj[key] == ""))
-          return res.status(403).json({ message: 'Feilds missing' });
-      }
       // Check for packages
-      if (![enums.PACKAGES.STANDARD].includes(RNreqObj.pkg)) {
+      if (![enums.PACKAGES.PREMIUM].includes(RNreqObj.pkg)) {
         return res.status(403).json({ message: 'Package not found' });
       }
       // Check for orgId
@@ -95,7 +83,7 @@ const sendRequestController = async (req, res, next) => {
 
       // Alert me
       sendEmail('PLAIN', { from: RNreqObj.firstname + ' ' + RNreqObj.lastname }, 'yoseph@sebsib.com')
-
+      sendEmail('PLAIN', { from: RNreqObj.firstname + ' ' + RNreqObj.lastname }, 'yosephten@gmail.com')
       return res.status(200).json(result[0])
     }
   } catch (error) {
