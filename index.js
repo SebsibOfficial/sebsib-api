@@ -20,7 +20,7 @@ dotenv.config(); // Configure to access .env files
 if (process.env.NODE_ENV == 'dev' || process.env.NODE_ENV == 'test') {
 	mongoose.connect(process.env.TEST_DB_URL)
 	.catch(error => console.error(error))
-	.then(() => app.listen(3000, () => console.log("API @ 3000 & DB @ "+process.env.TEST_DB_URL))) // Connect to the Database
+	.then(() => app.listen(process.env.PORT, () => console.log("API @ "+process.env.PORT+" & DB @ "+process.env.TEST_DB_URL))) // Connect to the Database
 } 
 else {
 	mongoose.connect(process.env.PROD_DB_URL, {
@@ -31,7 +31,7 @@ else {
 		useUnifiedTopology: true
 	})
 	.catch(error => console.error(error))
-	.then(() => app.listen(3000, () => console.log("API @ 3000 & DB @ "+process.env.PROD_DB_URL))) // Connect to the Database
+	.then(() => app.listen(process.env.PORT, () => console.log("API @ "+process.env.PORT+" & DB @ "+process.env.PROD_DB_URL))) // Connect to the Database
 }
 app.set('trust proxy', 1)
 app.use(limiter); // Limit requests
