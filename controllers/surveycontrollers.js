@@ -1,37 +1,125 @@
 const jwt = require('jsonwebtoken');
-const { Project, Response, Question, Survey, Organization, User } = require("../models");
+const { Project, Response, Question, Survey, Organization, User, OnlineQuestion } = require("../models");
 const ObjectId = require('mongoose').Types.ObjectId;
 const sanitizeAll = require('../utils/genSantizer');
 const getToken = require('../utils/getToken');
 const inputTranslate = require('../utils/translateIds');
+const { customSurveyIdGenerator, customSurveyLinkGenerator } = require('../utils/surveyGenerators');
+const translateIds = require('../utils/translateIds');
 
 const createSurveyController = async (req, res) => {
-  /*
- THE INTERFACE FOR THE REQUEST [would be cool if you could only accept this kind of request]
-{
-  "surveyName": string,
-  "questions": [{
-      "id": ObjectId,
-      "question": string,
-      "choices": [
-        {
-          "_id": ObjectId,
-          "text": string
-        }
-      ],
-      "inputType": "CHOICE" | "TEXT" | "MULTI-SELECT",
-      "showPattern": {
-        "hasShow": boolean,
-        "showIfQues": ObjectId,
-        "ansIs": ObjectId
+  var projectId = sanitizeAll(req.params.projectId);
+  var quesIds = [];
+  var surveyId;
+  var { surveyName, description, questions } = req.body;
+  surveyName = sanitizeAll(surveyName);
+  description = sanitizeAll(description);
+
+  // check if the survey name is similar to any other survey name in the project
+  var project = await Project.aggregate([
+    {
+      "$match": {
+        "_id": new ObjectId(projectId)
       }
-  }]
+    },
+    {
+      "$lookup": {
+        from: 'surveys',
+        localField: 'surveysId',
+        foreignField: '_id',
+        as: 'survey_doc'
+      }
+    }
+  ]);
+
+  if (project.length === 0) {
+    return res.status(400).json({ message: "Project does not exist" });
+  }
+
+
+  for (let i = 0; i < project[0].survey_doc.length; i++) {
+    if (project[0].survey_doc[i].name === surveyName) {
+      return res.status(400).json({ message: "Survey name exists in this project" });
+    }
+  }
+
+  // Check package if number of questions is allowed
+  var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
+  var org = await Organization.aggregate([
+    {
+      "$match": {
+        "_id": new ObjectId(orgId)
+      }
+    },
+    {
+      "$lookup": { from: 'packages', localField: 'packageId', foreignField: '_id', as: 'package_doc' }
+    }
+  ]);
+
+  if (questions.length > org[0].package_doc[0].questions) {
+    return res.status(401).json({ message: "Exceeded Question Limit" });
+  }
+
+  try {
+    // create survey object
+    const trimmedName = surveyName.replaceAll(" ", "");
+    const customSurveyId = await customSurveyIdGenerator(trimmedName);
+
+    var link = await customSurveyLinkGenerator();
+
+    var result = await Survey.insertMany({
+      _id: new ObjectId(),
+      shortSurveyId: customSurveyId,
+      name: surveyName,
+      questions: [],
+      responses: [],
+      description: description,
+      pic: '',
+      createdOn: new Date(),
+      type: 'REGULAR',
+      link: link ?? "",
+      status: 'STARTED'
+    })
+    surveyId = result[0]._id;
+
+    // Get the question Id's and insert the questions
+    for (let i = 0; i < questions.length; i++) {
+      quesIds.push(questions[i]._id);
+
+      var question = questions[i];
+      var iq = await Question.insertMany({
+        _id: new ObjectId(question._id),
+        hasShowPattern: question.hasShowPattern,
+        ptrnCount: question.ptrnCount,
+        showIf: question.showIf,
+        options: question.options,
+        questionText: question.questionText,
+        inputType: new ObjectId(inputTranslate('name', question.inputType)),
+        mandatory: question.mandatory,
+        createdOn: new Date(),
+        exp_min: question.exp_min,
+        exp_max: question.exp_max,
+        number: question.number,
+      });
+    }
+    // Insert the Id of the questions in the survey
+    var iis = await Survey.updateOne({ _id: surveyId }, { $push: { questions: quesIds } })
+    // Insert the survey Id in the surveylist in Projects
+    var iip = await Project.updateOne({ _id: projectId }, { $push: { surveysId: surveyId } })
+
+    return res.status(200).json({ iip, iis, iq });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error!" });
+  }
 }
-*/
+
+const createOnlineSurveyController = async (req, res) => {
   var projectId = sanitizeAll(req.params.projectId);
   var quesIds = []; var surveyId;
-  var { surveyName, questions } = req.body;
+  var { surveyName, filePath, description, questions } = req.body;
   surveyName = sanitizeAll(surveyName);
+  description = sanitizeAll(description);
 
   // Check package if number of questions is allowed
   var orgId = jwt.verify(getToken(req.header('Authorization')), process.env.TOKEN_SECRET).org;
@@ -56,48 +144,55 @@ const createSurveyController = async (req, res) => {
     var result = await Survey.exists({ name: surveyName });
     if (result != null) return res.status(403).json({ message: "Survey exisits" });
 
-    const _trimmedName = surveyName.replaceAll(" ", "");
-    const _customSurveyId = _trimmedName.toUpperCase().substring(0, 3) + _trimmedName.toUpperCase().substring(_trimmedName.length - 3, _trimmedName.length) + Math.floor(Math.random() * 90 + 10)
+    const trimmedName = surveyName.replaceAll(" ", "");
+    const customSurveyId = await customSurveyIdGenerator(trimmedName);
+
+    var link = await customSurveyLinkGenerator();
 
     // Insert survey
     var result = await Survey.insertMany({
       _id: new ObjectId(),
-      shortSurveyId: _customSurveyId,
+      shortSurveyId: customSurveyId,
       name: surveyName,
       questions: [],
       responses: [],
-      description: '',
-      pic: '',
-      createdOn: new Date()
+      description: description,
+      pic: filePath,
+      createdOn: new Date(),
+      type: 'ONLINE',
+      link: link ?? "",
+      status: 'STARTED'
     })
     surveyId = result[0]._id;
+    var surveyObject = result[0];
     // Get the question Id's
     for (let i = 0; i < questions.length; i++) {
-      quesIds.push(questions[i].id);
-    }
+      quesIds.push(questions[i]._id);
 
-    // Insert the question
-    for (let i = 0; i < questions.length; i++) {
       var question = questions[i];
-      var iq = await Question.insertMany({
-        _id: new ObjectId(question.id),
+
+      var iq = await OnlineQuestion.insertMany({
+        _id: new ObjectId(question._id),
         hasShowPattern: question.showPattern.hasShow,
         showIf: question.showPattern.hasShow ? {
           questionId: question.showPattern.showIfQues,
           answerId: question.showPattern.ansIs
         } : null,
-        options: question.choices,
-        mandatory: question.mandatory,
-        questionText: question.question,
+        options: question.options,
+        questionText: question.questionText,
         inputType: new ObjectId(inputTranslate('name', question.inputType)),
-        createdOn: new Date()
+        mandatory: question.mandatory,
+        createdOn: new Date(),
+        number: question.number ?? i + 1,
       });
     }
-    // Insert the Ids of the question in the survey
+    // Insert the Ids of the question and the generated link in the survey
     var iis = await Survey.updateOne({ _id: surveyId }, { $push: { questions: quesIds } })
     // Insert the survey Id in the surveylist in Projects
     var iip = await Project.updateOne({ _id: projectId }, { $push: { surveysId: surveyId } })
-    return res.status(200).json({ iip, iis, iq });
+
+
+    return res.status(200).json(surveyObject);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error!" });
@@ -105,7 +200,7 @@ const createSurveyController = async (req, res) => {
 
 }
 
-const getSurveyListController = async (req, res) => {
+const getSurveyListFromProjectIdController = async (req, res) => {
   var projectId = sanitizeAll(req.params.projectId);
   try {
     var projects = await Project.aggregate([
@@ -119,9 +214,70 @@ const getSurveyListController = async (req, res) => {
   }
 }
 
+const getSurveyListFromOrgIdController = async (req, res) => {
+  var orgId = sanitizeAll(req.params.orgId);
+  try {
+    // get org object from orgId
+    var org = await Organization.findOne({ _id: orgId });
+    if (!org) return res.status(403).json({ message: 'Organization does not exist' });
+
+    var projects = org.projectsId;
+
+    // loop through projects and get surveys, then push only the name and id of the survey, not the entire survey object
+    var surveyObjects = [];
+    for (let i = 0; i < projects.length; i++) {
+      const project = projects[i];
+      var surveys = await Project.aggregate([
+        { $match: { _id: new ObjectId(project) } },
+        { $lookup: { from: 'surveys', localField: 'surveysId', foreignField: '_id', as: 'survey_docs' } }
+      ]);
+
+      surveys[0].survey_docs.forEach(survey => {
+        surveyObjects.push({
+          name: survey.name,
+          id: survey._id
+        });
+      });
+    }
+
+    return res.status(200).json(surveyObjects);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error!" });
+  }
+}
+
+const getSurveyListFromUserIdController = async (req, res) => {
+  const userId = sanitizeAll(req.params.userId);
+
+  try {
+    var user = await User.findOne({ _id: new ObjectId(userId) });
+    if (!user) return res.status(403).json({ message: "User does not exist" });
+    if (translateIds("ID", user.roleId) != "VIEWER") return res.status(403).json({ message: "User is not a Viewer" });
+    
+    var surveys = await Survey.find({_id: { $in : user.toView } });
+    var surveyObjects = [];
+
+    surveys.forEach(survey => {
+      surveyObjects.push({
+        name: survey.name,
+        _id: survey._id
+      });
+    });
+
+    return res.status(200).json(surveyObjects);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
 const getResponsesController = async (req, res) => {
   const surveyId = sanitizeAll(req.params.surveyId);
   try {
+    const survey_type_check = await Survey.findOne({_id: surveyId});
     const survey = await Survey.aggregate([
       {
         "$match": {
@@ -130,7 +286,7 @@ const getResponsesController = async (req, res) => {
       },
       {
         "$lookup": {
-          "from": "questions",
+          "from": survey_type_check.type == "REGULAR" ? "questions" : "online-questions",
           "localField": "questions",
           "foreignField": "_id",
           "as": "joined_questions"
@@ -145,7 +301,44 @@ const getResponsesController = async (req, res) => {
         }
       }
     ]);
-    return res.status(200).json({ questions: survey[0].joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }), responses: survey[0].joined_responses });
+
+    var questions = survey[0].joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; })
+    var responses = survey[0].joined_responses
+
+    for (let i = 0; i < questions.length; i++) {
+      var q = questions[i];
+
+      if (typeof q.questionText == 'object') {
+        // loop through the question array inside the question and transform the format to a plain, single language by keeping only `en`
+        for (let j = 0; j < q.questionText.length; j++) {
+          const question = q.questionText[j];
+          if (question.langId == 'en') {
+            q.questionText = question.text;
+          }
+        }
+      }
+      
+      // loop through the options array inside the question and transform the format to a plain, single language by keeping only `en`
+      if (survey_type_check.type == "REGULAR"){
+        var options_arr = [];
+        for (let j = 0; j < q.options.length; j++) {
+          const option = q.options[j];
+          for (let i = 0; i < option.text.length; i++) {
+            const Chlang = option.text[i];
+            if (Chlang.langId == 'en') {
+              options_arr.push({
+                _id: option._id,
+                text: Chlang.text
+              })
+            }
+          }        
+        }
+        q.options = options_arr;
+      }
+
+    }
+
+    return res.status(200).json({ questions: questions, responses: responses });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
@@ -187,12 +380,66 @@ const getSurveyController = async (req, res) => {
       shortSurveyId: survey.shortSurveyId,
       name: survey.name,
       questions: survey.joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }),
-      responses: survey.joined_responses
-      /*, description: survey.description, 
-      picture: survey.picture, 
+      responses: survey.joined_responses,
+      type: survey.type,
+      link: survey.link,
+      status: survey.status,
+      description: survey.description, 
+      /* picture: survey.picture, 
       createdOn: survey.createdOn */
     });
 
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
+const getRegularSurveyController = async (req, res) => {
+  const surveyId = sanitizeAll(req.params.id);
+
+  try {
+    var _survey = await Survey.aggregate([
+      {
+        "$match": {
+          "_id": new ObjectId(surveyId)
+        }
+      },
+      {
+        "$lookup": {
+          "from": "questions",
+          "localField": "questions",
+          "foreignField": "_id",
+          "as": "joined_questions",
+        }
+      },
+      {
+        "$lookup": {
+          "from": "responses",
+          "localField": "responses",
+          "foreignField": "_id",
+          "as": "joined_responses",
+        }
+      }
+    ]);
+
+    var survey = _survey[0];
+
+    if (survey.type == null || survey.type == undefined || survey.type.toUpperCase() == 'regular') {
+      return res.status(200).json({
+        _id: survey._id,
+        shortSurveyId: survey.shortSurveyId,
+        name: survey.name,
+        questions: survey.joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }),
+        // no responses will be sent since this endpoint is only used from mobile
+        // responses: survey.joined_responses
+        /*, description: survey.description, 
+        picture: survey.picture, 
+        createdOn: survey.createdOn */
+      });
+    }
+
+    return res.status(400).json({ "message": "Not a regular survey" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error" });
@@ -255,7 +502,8 @@ const getRecentResponseController = async (req, res, next) => {
     ]).sort({ sentDate: -1 });
 
     for (let index = 0; index < _responses.length; index++) {
-      _responses[index].enum_obj[0].password = "*";
+      if (_responses[index].enum_obj[0] !== undefined)
+        _responses[index].enum_obj[0].password = "*";
     }
 
     return res.status(200).json({ resp: _responses, proj: all_projects });
@@ -364,13 +612,208 @@ const syncSurveysController = async (req, res, next) => {
   }
 }
 
+const getSurveyQuestionsController = async (req, res) => {
+  const surveyId = sanitizeAll(req.params.id);
+
+  try {
+    const survey_type_check = await Survey.findOne({_id: surveyId});
+    var _survey = await Survey.aggregate([
+      {
+        "$match": {
+          "_id": new ObjectId(surveyId)
+        }
+      },
+      {
+        "$lookup": {
+          "from": survey_type_check.type == "REGULAR" ? "questions" : "online-questions",
+          "localField": "questions",
+          "foreignField": "_id",
+          "as": "joined_questions",
+        }
+      },
+    ]);
+
+    var survey = _survey[0];
+    return res.status(200).json({
+      _id: survey._id,
+      shortSurveyId: survey.shortSurveyId,
+      name: survey.name,
+      questions: survey.joined_questions.sort(function (x, y) { return x.createdOn - y.createdOn; }),
+      type: survey.type,
+      link: survey.link,
+      status: survey.status,
+      description: survey.description,
+      picture: survey.pic,
+      createdOn: survey.createdOn,
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
+const editSurveyController = async (req, res) => {
+  var surveyId = sanitizeAll(req.params.id);
+  var {surveyName, questions, description} = req.body;
+
+  try {
+    var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
+    if (!survey) return res.status(403).json({ message: "Survey does not exist anymore" });
+
+    if (survey.type.toUpperCase() !== "REGULAR") return res.status(403).json({ message: "Survey cannot be edited" });
+
+    var updatedQuestions = [];
+    for (let index = 0; index < questions.length; index++) {
+
+      const question = questions[index];
+
+      await Question.updateOne({ _id: new ObjectId(question._id) }, {
+        $set: {
+          hasShowPattern: question.hasShowPattern,
+          ptrnCount: question.ptrnCount,
+          showIf: question.showIf,
+          options: question.options,
+          questionText: question.questionText,
+          inputType: new ObjectId(inputTranslate('name', question.inputType)),
+          mandatory: question.mandatory,
+          exp_min: question.exp_min,
+          exp_max: question.exp_max,
+          number: question.number,
+        }
+      }, {upsert: true});
+
+      updatedQuestions.push(question._id);
+    }
+
+    var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {
+      $set: {
+        name: surveyName,
+        questions: updatedQuestions,
+        description: description,
+      }
+    });
+
+    return res.status(200).json({ ip: updatedSurvey });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+
+}
+
+const editOnlineSurveyController = async (req, res) => {
+  var surveyId = sanitizeAll(req.params.id);
+  var { surveyName, questions, description, filePath } = req.body;
+
+  try {
+    var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
+    if (!survey) return res.status(403).json({ message: "Survey does not exist anymore" });
+
+    if (survey.type.toUpperCase() === "REGULAR") return res.status(403).json({ message: "Survey cannot be edited" });
+
+    var updatedQuestions = [];
+    for (let index = 0; index < questions.length; index++) {
+
+      const question = questions[index];
+      await OnlineQuestion.updateOne({ _id: new ObjectId(question._id) }, {
+        $set: {
+          hasShowPattern: question.showPattern.hasShow,
+          showIf: question.showPattern.hasShow ? {
+            questionId: question.showPattern.showIfQues,
+            answerId: question.showPattern.ansIs
+          } : null,
+          options: question.options,
+          questionText: question.questionText,
+          inputType: new ObjectId(inputTranslate('name', question.inputType)),
+          mandatory: question.mandatory,
+          createdOn: new Date(),
+          number: question.number,
+        }
+      }, {upsert: true});
+
+      updatedQuestions.push(question._id);
+    }
+
+    if (filePath == "") {
+      var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {
+        $set: {
+          name: surveyName,
+          questions: updatedQuestions,
+          description: description
+        }
+      });
+    } 
+    else {
+      var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {
+        $set: {
+          name: surveyName,
+          questions: updatedQuestions,
+          description: description,
+          pic: filePath,
+        }
+      });
+    }
+
+    return res.status(200).json(survey);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
+const setOnlineSurveyPicController = async (req, res) => {
+  var shortSurveyId = sanitizeAll(req.params.shId);
+  var path = sanitizeAll(req.body.pic);
+
+  try {
+    var result = await Survey.updateOne({shortSurveyId: shortSurveyId}, {
+      $set: {
+        pic: path
+      }
+    })
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
+const updateSurveyStatus = async (req, res) => {
+  var surveyId = sanitizeAll(req.params.id);
+  var statusFromReq = sanitizeAll(req.params.status);
+
+  try {
+    var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
+    if (!survey) return res.status(403).json({ message: "Survey does not exist" });
+
+    var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {$set: {status: statusFromReq}})
+
+    return res.status(200).json({ updatedSurvey });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+}
+
 module.exports = {
   createSurveyController,
-  getSurveyListController,
+  createOnlineSurveyController,
+  getSurveyListFromProjectIdController,
+  getSurveyListFromOrgIdController,
   getRecentResponseController,
   getSurveyController,
+  getRegularSurveyController,
   getResponsesController,
   sendResponseController,
   deleteSurveyController,
-  syncSurveysController
+  syncSurveysController,
+  getSurveyQuestionsController,
+  getSurveyListFromUserIdController,
+  editSurveyController,
+  editOnlineSurveyController,
+  updateSurveyStatus,
+  setOnlineSurveyPicController
 }

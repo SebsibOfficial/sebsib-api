@@ -36,6 +36,10 @@ const userSchema = new mongoose.Schema({
     required: false,
     default: ''
   },
+  hasPassChange: {
+    type: Boolean,
+    required: true
+  },
   password: {
     type: String,
     required: true,
@@ -47,7 +51,11 @@ const userSchema = new mongoose.Schema({
   createdOn: {
     type: Date,
     default: Date.now
-  }
+  },
+  toView: {
+    type: [mongoose.Types.ObjectId],
+    required: false,
+  },
 })
 
 module.exports = mongoose.model('User', userSchema);

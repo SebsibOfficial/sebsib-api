@@ -13,10 +13,6 @@ const orgSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  hasPassChange: {
-    type: Boolean,
-    required: true
-  },
   packageId: {
     type: mongoose.Types.ObjectId,
     required: true,

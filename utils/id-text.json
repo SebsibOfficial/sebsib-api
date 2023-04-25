@@ -83,6 +83,10 @@
   "text": "ANALYST"
 },
 {
+  "_id": "641ddc0c56452891a460db69",
+  "text": "VIEWER"
+},
+{
   "_id":"623cc24a8b7ab06011bd1e62",
   "text": "SUPER"
 },
@@ -96,7 +100,7 @@
 },
 {
   "_id":"63450c517202e0697ecfb7f6",
-  "text": "STANDARD"
+  "text": "PREMIUM"
 },
 {
   "_id":"623d73a051e8bcb894b3f7e0",

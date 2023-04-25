@@ -1,11 +1,51 @@
-const { getMemberListController, createMemberController, getMemberController, editMemberController,
-  deleteMemberController, removeMemberController, addMemberController } = require('../controllers/membercontrollers');
-const { getSurveyListController, createSurveyController, getRecentResponseController, getSurveyController,
-  sendResponseController, deleteSurveyController, getResponsesController, syncSurveysController } = require('../controllers/surveycontrollers');
-const { getProjectListController, createProjectController, deleteProjectController } = require('../controllers/projectcontrollers');
+const {
+  getMemberListController,
+  createMemberController,
+  getMemberController,
+  editMemberController,
+  deleteMemberController,
+  removeMemberController,
+  addMemberController,
+} = require('../controllers/membercontrollers');
+
+const {
+  getSurveyListFromProjectIdController,
+  getSurveyListFromOrgIdController,
+  createSurveyController,
+  createOnlineSurveyController,
+  getRecentResponseController,
+  getSurveyController,
+  getRegularSurveyController,
+  sendResponseController,
+  deleteSurveyController,
+  getResponsesController,
+  syncSurveysController,
+  getSurveyQuestionsController,
+  editSurveyController,
+  getSurveyListFromUserIdController,
+  editOnlineSurveyController,
+  updateSurveyStatus,
+  setOnlineSurveyPicController
+} = require('../controllers/surveycontrollers');
+
+const {
+  getProjectListController,
+  createProjectController,
+  deleteProjectController,
+} = require('../controllers/projectcontrollers');
+
 const { editSettingsController } = require('../controllers/settingcontrollers');
-const {sendRequestController,  getOrgStatusController,  changePasswordController, resetPasswordController} = require('../controllers/othercontrollers')
-const { getDashStatController, getAllAccountInfoController,
+
+const {
+  sendRequestController,
+  getOrgStatusController,
+  changePasswordController,
+  resetPasswordController,
+} = require('../controllers/othercontrollers')
+
+const {
+  getDashStatController,
+  getAllAccountInfoController,
   getRequestsController,
   getInfoBriefController,
   getAllInfoController,
@@ -16,12 +56,12 @@ const { getDashStatController, getAllAccountInfoController,
   decideRequestController,
   editAccountController,
   deleteAccountController,
-  deleteAdminController, } = require('../controllers/admincontrollers')
+  deleteAdminController,
+} = require('../controllers/admincontrollers')
 
 module.exports = {
   getMemberListController,
   createMemberController,
-  getSurveyListController,
   createSurveyController,
   getProjectListController,
   createProjectController,
@@ -29,6 +69,7 @@ module.exports = {
   getMemberController,
   getRecentResponseController,
   getSurveyController,
+  getRegularSurveyController,
   createProjectController,
   sendResponseController,
   editMemberController,
@@ -56,4 +97,13 @@ module.exports = {
   deleteAccountController,
   deleteAdminController,
   syncSurveysController,
+  getSurveyListFromProjectIdController,
+  getSurveyListFromOrgIdController,
+  createOnlineSurveyController,
+  getSurveyQuestionsController,
+  editSurveyController,
+  getSurveyListFromUserIdController,
+  editOnlineSurveyController,
+  updateSurveyStatus,
+  setOnlineSurveyPicController
 }
