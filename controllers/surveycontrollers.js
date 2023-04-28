@@ -214,6 +214,24 @@ const getSurveyListFromProjectIdController = async (req, res) => {
   }
 }
 
+const getStandardSurveyListFromProjectIdController = async (req, res) => {
+  var projectId = sanitizeAll(req.params.projectId);
+  try {
+    var projects = await Project.aggregate([
+      { $lookup: { from: 'surveys', localField: 'surveysId', foreignField: '_id', as: 'survey_docs' } }
+    ]);
+    var surveys = projects.filter(project => project._id == projectId);
+
+    // filter and keep regular surveys only
+    surveys[0].survey_docs = surveys[0].survey_docs.filter(survey => survey.type == 'REGULAR');
+
+    if (surveys.length == 0) return res.status(403).json({ message: 'Bad Input' });
+    return res.status(200).send(surveys[0].survey_docs);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const getSurveyListFromOrgIdController = async (req, res) => {
   var orgId = sanitizeAll(req.params.orgId);
   try {
@@ -255,8 +273,8 @@ const getSurveyListFromUserIdController = async (req, res) => {
     var user = await User.findOne({ _id: new ObjectId(userId) });
     if (!user) return res.status(403).json({ message: "User does not exist" });
     if (translateIds("ID", user.roleId) != "VIEWER") return res.status(403).json({ message: "User is not a Viewer" });
-    
-    var surveys = await Survey.find({_id: { $in : user.toView } });
+
+    var surveys = await Survey.find({ _id: { $in: user.toView } });
     var surveyObjects = [];
 
     surveys.forEach(survey => {
@@ -277,7 +295,7 @@ const getSurveyListFromUserIdController = async (req, res) => {
 const getResponsesController = async (req, res) => {
   const surveyId = sanitizeAll(req.params.surveyId);
   try {
-    const survey_type_check = await Survey.findOne({_id: surveyId});
+    const survey_type_check = await Survey.findOne({ _id: surveyId });
     const survey = await Survey.aggregate([
       {
         "$match": {
@@ -317,9 +335,9 @@ const getResponsesController = async (req, res) => {
           }
         }
       }
-      
+
       // loop through the options array inside the question and transform the format to a plain, single language by keeping only `en`
-      if (survey_type_check.type == "REGULAR"){
+      if (survey_type_check.type == "REGULAR") {
         var options_arr = [];
         for (let j = 0; j < q.options.length; j++) {
           const option = q.options[j];
@@ -331,7 +349,7 @@ const getResponsesController = async (req, res) => {
                 text: Chlang.text
               })
             }
-          }        
+          }
         }
         q.options = options_arr;
       }
@@ -384,7 +402,7 @@ const getSurveyController = async (req, res) => {
       type: survey.type,
       link: survey.link,
       status: survey.status,
-      description: survey.description, 
+      description: survey.description,
       /* picture: survey.picture, 
       createdOn: survey.createdOn */
     });
@@ -616,7 +634,7 @@ const getSurveyQuestionsController = async (req, res) => {
   const surveyId = sanitizeAll(req.params.id);
 
   try {
-    const survey_type_check = await Survey.findOne({_id: surveyId});
+    const survey_type_check = await Survey.findOne({ _id: surveyId });
     var _survey = await Survey.aggregate([
       {
         "$match": {
@@ -655,7 +673,7 @@ const getSurveyQuestionsController = async (req, res) => {
 
 const editSurveyController = async (req, res) => {
   var surveyId = sanitizeAll(req.params.id);
-  var {surveyName, questions, description} = req.body;
+  var { surveyName, questions, description } = req.body;
 
   try {
     var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
@@ -681,7 +699,7 @@ const editSurveyController = async (req, res) => {
           exp_max: question.exp_max,
           number: question.number,
         }
-      }, {upsert: true});
+      }, { upsert: true });
 
       updatedQuestions.push(question._id);
     }
@@ -731,7 +749,7 @@ const editOnlineSurveyController = async (req, res) => {
           createdOn: new Date(),
           number: question.number,
         }
-      }, {upsert: true});
+      }, { upsert: true });
 
       updatedQuestions.push(question._id);
     }
@@ -744,7 +762,7 @@ const editOnlineSurveyController = async (req, res) => {
           description: description
         }
       });
-    } 
+    }
     else {
       var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {
         $set: {
@@ -769,7 +787,7 @@ const setOnlineSurveyPicController = async (req, res) => {
   var path = sanitizeAll(req.body.pic);
 
   try {
-    var result = await Survey.updateOne({shortSurveyId: shortSurveyId}, {
+    var result = await Survey.updateOne({ shortSurveyId: shortSurveyId }, {
       $set: {
         pic: path
       }
@@ -789,7 +807,7 @@ const updateSurveyStatus = async (req, res) => {
     var survey = await Survey.findOne({ _id: new ObjectId(surveyId) });
     if (!survey) return res.status(403).json({ message: "Survey does not exist" });
 
-    var updatedSurvey = await Survey.updateOne({ _id: surveyId }, {$set: {status: statusFromReq}})
+    var updatedSurvey = await Survey.updateOne({ _id: surveyId }, { $set: { status: statusFromReq } })
 
     return res.status(200).json({ updatedSurvey });
   } catch (error) {
@@ -815,5 +833,6 @@ module.exports = {
   editSurveyController,
   editOnlineSurveyController,
   updateSurveyStatus,
-  setOnlineSurveyPicController
+  setOnlineSurveyPicController,
+  getStandardSurveyListFromProjectIdController
 }
