@@ -23,7 +23,7 @@ const sendRequestController = async (req, res, next) => {
         RGreqObj[key] = sanitizeAll(RGreqObj[key])
       }
 
-      if (![enums.PACKAGES.FREE_TRIAL, enums.PACKAGES.PREMIUM].includes(RGreqObj.pkg)) {
+      if (![enums.PACKAGES.FREE_TRIAL, enums.PACKAGES.PREMIUM, enums.PACKAGES.ENTERPRISE].includes(RGreqObj.pkg)) {
         return res.status(403).json({ message: 'Package not found' });
       }
 
